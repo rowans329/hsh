@@ -4,7 +4,7 @@ name: Tarpaulin
 
 jobs:
   check:
-    name: Rust project
+    name: Tarpaulin check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

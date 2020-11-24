@@ -100,7 +100,9 @@ pub struct HashOutput {
 
 impl HashOutput {
     pub fn new<I: IntoIterator<Item = u8>>(bytes: I) -> Self {
-        Self { bytes: bytes.into_iter().collect() }
+        Self {
+            bytes: bytes.into_iter().collect(),
+        }
     }
 
     pub fn as_bytes(&self) -> &[u8] {

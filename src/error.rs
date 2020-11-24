@@ -5,7 +5,12 @@ use std::fmt::{self, Debug, Display};
 use hex::FromHexError;
 
 pub enum HshErr {
+<<<<<<< Updated upstream
     InvalidHashFunction,
+=======
+    InvalidHashFunction(String),
+    InvalidSalt(String),
+>>>>>>> Stashed changes
     InvalidSaltHex(FromHexError),
 }
 
@@ -14,6 +19,7 @@ impl Debug for HshErr {
         match self {
             HshErr::InvalidHashFunction => f.write_str("invalid hash function"),
             HshErr::InvalidSaltHex(err) => f.write_str(&format!("invalid salt hex: {}", err)),
+            HshErr::InvalidSalt(str) => f.write_str(&format!("invalid salt: {}", str)),
         }
     }
 }

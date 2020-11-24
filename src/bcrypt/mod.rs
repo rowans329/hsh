@@ -14,6 +14,28 @@ use crate::types::HashOutput;
 #[derive(Debug)]
 pub struct Salt([u8; 16]);
 
+impl Salt {
+    fn new(data: [u8; 16]) -> Self {
+        Self(data)
+    }
+
+    fn from_vec(data: Vec<u8>) -> HshResult<Self> {
+        if data.len() != 16 {
+            return Err(HshErr::InvalidSalt(
+                format!("incorrect hex length (should be 16 bytes, found {})", data.len())
+            ));
+        }
+
+        let mut arr = [0u8; 16];
+
+        for (i, v) in data.iter().enumerate() {
+            arr[i] = *v;
+        }
+
+        Ok(Self::new(arr))
+    }
+}
+
 impl FromStr for Salt {
     type Err = HshErr;
 
@@ -24,7 +46,7 @@ impl FromStr for Salt {
             return Err(HshErr::InvalidSaltHex(err));
         }
 
-        Ok(Salt(decoded.unwrap().try_into().unwrap()))
+        Salt::from_vec(decoded.unwrap())
     }
 }
 

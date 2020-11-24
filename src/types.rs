@@ -1,5 +1,5 @@
 // Std imports
-use std::fmt::{self, Debug, Display};
+use std::fmt::Debug;
 use std::str::FromStr;
 
 // Internal imports
@@ -94,22 +94,28 @@ impl FromStr for HashFunction {
     }
 }
 
-pub enum Output {
-    Hex(String),
-    Bytes(Vec<u8>),
+pub struct HashOutput {
+    bytes: Vec<u8>,
 }
 
-impl Debug for Output {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Output::Hex(hex) => Display::fmt(hex, f),
-            Output::Bytes(bytes) => Debug::fmt(bytes, f),
-        }
+impl HashOutput {
+    pub fn new<I: IntoIterator<Item = u8>>(bytes: I) -> Self {
+        Self { bytes: bytes.into_iter().collect() }
     }
-}
 
-impl Display for Output {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        Debug::fmt(self, f)
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.bytes
+    }
+
+    pub fn into_bytes(self) -> Vec<u8> {
+        self.bytes
+    }
+
+    pub fn as_hex(&self) -> String {
+        hex::encode(&self.bytes)
+    }
+
+    pub fn into_hex(self) -> String {
+        hex::encode(self.bytes)
     }
 }

@@ -79,15 +79,15 @@ use crate::shabal::{
     shabal384::Shabal384Hasher, shabal512::Shabal512Hasher,
 };
 use crate::streebog::{streebog256::Streebog256Hasher, streebog512::Streebog512Hasher};
-use crate::types::{HashFunction, Output, Salt};
+use crate::types::{HashFunction, HashOutput, Salt};
 use crate::whirlpool::WhirlpoolHasher;
 
-fn hash_bytes(
+pub fn hash(
     string: &str,
     function: HashFunction,
     cost: Option<u32>,
     salt: Option<Salt>,
-) -> Vec<u8> {
+) -> HashOutput {
     use crate::types::HashFunction::*;
 
     match function {
@@ -129,64 +129,5 @@ fn hash_bytes(
         Streebog256 => Streebog256Hasher.hash_str((), string),
         Streebog512 => Streebog512Hasher.hash_str((), string),
         Whirlpool => WhirlpoolHasher.hash_str((), string),
-    }
-}
-
-fn hash_hex(string: &str, function: HashFunction, cost: Option<u32>, salt: Option<Salt>) -> String {
-    use crate::types::HashFunction::*;
-
-    match function {
-        Bcrypt => {
-            let input = BcryptInput::new(cost.unwrap(), salt.unwrap());
-            BcryptHasher.hash_str_hex(input, string)
-        }
-        Blake2 => Blake2Hasher.hash_str_hex((), string),
-        Gost94Test => Gost94Hasher.hash_str_hex(SBox::Test, string),
-        Gost94CryptoPro => Gost94Hasher.hash_str_hex(SBox::CryptoPro, string),
-        Groestl224 => Groestl224Hasher.hash_str_hex((), string),
-        Groestl256 => Groestl256Hasher.hash_str_hex((), string),
-        Groestl384 => Groestl384Hasher.hash_str_hex((), string),
-        Groestl512 => Groestl512Hasher.hash_str_hex((), string),
-        Keccak224 => Keccak224Hasher.hash_str_hex((), string),
-        Keccak256 => Keccak256Hasher.hash_str_hex((), string),
-        Keccak256Full => Keccak256FullHasher.hash_str_hex((), string),
-        Keccak384 => Keccak384Hasher.hash_str_hex((), string),
-        Keccak512 => Keccak512Hasher.hash_str_hex((), string),
-        Md2 => Md2Hasher.hash_str_hex((), string),
-        Md4 => Md4Hasher.hash_str_hex((), string),
-        Md5 => Md5Hasher.hash_str_hex((), string),
-        Ripemd160 => Ripemd160Hasher.hash_str_hex((), string),
-        Ripemd320 => Ripemd320Hasher.hash_str_hex((), string),
-        Sha1 => Sha1Hasher.hash_str_hex((), string),
-        Sha224 => Sha224Hasher.hash_str_hex((), string),
-        Sha256 => Sha256Hasher.hash_str_hex((), string),
-        Sha384 => Sha384Hasher.hash_str_hex((), string),
-        Sha512 => Sha512Hasher.hash_str_hex((), string),
-        Sha3_224 => Sha3_224Hasher.hash_str_hex((), string),
-        Sha3_256 => Sha3_256Hasher.hash_str_hex((), string),
-        Sha3_384 => Sha3_384Hasher.hash_str_hex((), string),
-        Sha3_512 => Sha3_512Hasher.hash_str_hex((), string),
-        Shabal192 => Shabal192Hasher.hash_str_hex((), string),
-        Shabal224 => Shabal224Hasher.hash_str_hex((), string),
-        Shabal256 => Shabal256Hasher.hash_str_hex((), string),
-        Shabal384 => Shabal384Hasher.hash_str_hex((), string),
-        Shabal512 => Shabal512Hasher.hash_str_hex((), string),
-        Streebog256 => Streebog256Hasher.hash_str_hex((), string),
-        Streebog512 => Streebog512Hasher.hash_str_hex((), string),
-        Whirlpool => WhirlpoolHasher.hash_str_hex((), string),
-    }
-}
-
-pub fn hash(
-    string: &str,
-    function: HashFunction,
-    cost: Option<u32>,
-    salt: Option<Salt>,
-    bytes: bool,
-) -> Output {
-    if bytes {
-        Output::Bytes(hash_bytes(string, function, cost, salt))
-    } else {
-        Output::Hex(hash_hex(string, function, cost, salt))
     }
 }

@@ -1,17 +1,36 @@
 // Std imports
-use std::convert::TryInto;
 use std::str::FromStr;
-
-// External imports
-use bcrypt;
-use hex;
 
 // Internal imports
 use crate::error::{HshErr, HshResult};
 use crate::hasher::Hasher;
+use crate::types::HashOutput;
 
 #[derive(Debug)]
 pub struct Salt([u8; 16]);
+
+impl Salt {
+    fn new(data: [u8; 16]) -> Self {
+        Self(data)
+    }
+
+    fn from_vec(data: Vec<u8>) -> HshResult<Self> {
+        if data.len() != 16 {
+            return Err(HshErr::InvalidSalt(format!(
+                "incorrect hex length (should be 16 bytes, found {})",
+                data.len()
+            )));
+        }
+
+        let mut arr = [0u8; 16];
+
+        for (i, v) in data.iter().enumerate() {
+            arr[i] = *v;
+        }
+
+        Ok(Self::new(arr))
+    }
+}
 
 impl FromStr for Salt {
     type Err = HshErr;
@@ -23,7 +42,7 @@ impl FromStr for Salt {
             return Err(HshErr::InvalidSaltHex(err));
         }
 
-        Ok(Salt(decoded.unwrap().try_into().unwrap()))
+        Salt::from_vec(decoded.unwrap())
     }
 }
 
@@ -43,9 +62,10 @@ pub struct BcryptHasher;
 impl Hasher for BcryptHasher {
     type HashInput = BcryptInput;
 
-    fn hash(&self, input: BcryptInput, bytes: &[u8]) -> Vec<u8> {
-        let mut hash: Vec<u8> = std::iter::repeat(0).take(24).collect();
-        bcrypt::bcrypt(input.cost, &input.salt.0, bytes, hash.as_mut());
-        hash
+    fn hash(&self, input: BcryptInput, bytes: &[u8]) -> HashOutput {
+        // let mut hash: Vec<u8> = std::iter::repeat(0).take(24).collect();
+        let mut hash: [u8; 24] = [0; 24];
+        bcrypt::bcrypt(input.cost, &input.salt.0, bytes, &mut hash);
+        HashOutput::new(hash.to_vec())
     }
 }

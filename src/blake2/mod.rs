@@ -3,16 +3,17 @@ use blake2::{Blake2b, Digest};
 
 // Internal imports
 use crate::hasher::Hasher;
+use crate::types::HashOutput;
 
 pub struct Blake2Hasher;
 
 impl Hasher for Blake2Hasher {
     type HashInput = ();
 
-    fn hash(&self, _input: (), bytes: &[u8]) -> Vec<u8> {
+    fn hash(&self, _input: (), bytes: &[u8]) -> HashOutput {
         let mut hasher = Blake2b::new();
         hasher.update(bytes);
-        hasher.finalize().to_vec()
+        HashOutput::new(hasher.finalize())
     }
 }
 
@@ -33,26 +34,26 @@ mod test {
     fn blake2_hash_bytes_test() {
         let bytes = b"Hello, world!";
         let hash = Blake2Hasher.hash((), bytes);
-        assert_eq!(HELLO_WORLD_HASH_BYTES.to_vec(), hash);
+        assert_eq!(HELLO_WORLD_HASH_BYTES.to_vec(), hash.as_bytes());
     }
 
     #[test]
     fn blake2_hash_string_test() {
         let string = "Hello, world!";
         let hash = Blake2Hasher.hash_str((), string);
-        assert_eq!(HELLO_WORLD_HASH_BYTES.to_vec(), hash);
+        assert_eq!(HELLO_WORLD_HASH_BYTES.to_vec(), hash.as_bytes());
     }
 
     #[test]
     fn blake2_hash_bytes_hex_test() {
         let bytes = b"Hello, world!";
-        let hash = Blake2Hasher.hash_hex((), bytes);
-        assert_eq!(HELLO_WORLD_HASH_HEX, hash);
+        let hash = Blake2Hasher.hash((), bytes);
+        assert_eq!(HELLO_WORLD_HASH_HEX, hash.as_hex());
     }
     #[test]
     fn blake2_hash_string_hex_test() {
         let string = "Hello, world!";
-        let hash = Blake2Hasher.hash_str_hex((), string);
-        assert_eq!(HELLO_WORLD_HASH_HEX, hash);
+        let hash = Blake2Hasher.hash_str((), string);
+        assert_eq!(HELLO_WORLD_HASH_HEX, hash.as_hex());
     }
 }

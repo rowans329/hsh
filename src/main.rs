@@ -23,6 +23,10 @@ struct Opt {
 
 fn main() {
     let opt = Opt::from_args();
-    let hash = hash(&opt.string, opt.function, opt.cost, opt.salt, opt.bytes);
-    println!("{}", hash);
+    let hash = hash(&opt.string, opt.function, opt.cost, opt.salt);
+    if opt.bytes {
+        println!("{:?}", hash.as_bytes());
+    } else {
+        println!("{}", hash.as_hex());
+    }
 }

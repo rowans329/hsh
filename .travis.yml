@@ -1,0 +1,84 @@
+# Based on the "trust" template v0.1.2
+# https://github.com/japaric/trust/tree/v0.1.2
+
+dist: trusty
+language: rust
+services: docker
+sudo: required
+
+env:
+  global:
+    - CRATE_NAME=hsh
+
+matrix:
+    # Linux
+    - env: TARGET=aarch64-unknown-linux-gnu
+    - env: TARGET=arm-unknown-linux-gnueabi
+    - env: TARGET=armv7-unknown-linux-gnueabihf
+    - env: TARGET=i686-unknown-linux-gnu
+    - env: TARGET=i686-unknown-linux-musl
+    - env: TARGET=mips-unknown-linux-gnu
+    - env: TARGET=mips64-unknown-linux-gnuabi64
+    - env: TARGET=mips64el-unknown-linux-gnuabi64
+    - env: TARGET=mipsel-unknown-linux-gnu
+    - env: TARGET=powerpc-unknown-linux-gnu
+    - env: TARGET=powerpc64-unknown-linux-gnu
+    - env: TARGET=powerpc64le-unknown-linux-gnu
+    - env: TARGET=s390x-unknown-linux-gnu DISABLE_TESTS=1
+    - env: TARGET=x86_64-unknown-linux-gnu
+    - env: TARGET=x86_64-unknown-linux-musl
+
+    # OSX
+    - env: TARGET=i686-apple-darwin
+      os: osx
+    - env: TARGET=x86_64-apple-darwin
+      os: osx
+
+    # *BSD
+    - env: TARGET=i686-unknown-freebsd DISABLE_TESTS=1
+    - env: TARGET=x86_64-unknown-freebsd DISABLE_TESTS=1
+    - env: TARGET=x86_64-unknown-netbsd DISABLE_TESTS=1
+
+    # Windows
+    - env: TARGET=x86_64-pc-windows-gnu
+
+before_install:
+  - set -e
+  - rustup self update
+
+install:
+  - sh ci/install.sh
+  - source ~/.cargo/env || true
+
+script:
+  - bash ci/script.sh
+
+after_script: set +e
+
+before_deploy:
+  - sh ci/before_deploy.sh
+
+deploy:
+  api_key:
+    secure: mhd85cKswfuwHvyXarY9M4ebObavLeWVTnUgsVRb+6DghacYvjxPNfLRxM/o2UGDnJG8GGC7UhOj2ZoJIu4PoT1Jo6ehl/1coh1spbgyTFUOCiIeJhw+W26z+DzEplC0YkBhpWSp7ZexQlLScPaq+nyJWMc/7wLhapheZBBqOHlgpQBx7HkDVE0iR4PsY5pk6ld/sOlFhUqih3ZNbTPcq4LkxebeIAOp69fnp1ntFyWWIP5sFBf7kbaXWZ/yN9Hpv5qANxpebjFyetE9bVLvQKVdHyHA0Dsik+qtvINAAO8sF0Iq3DOlGxvpiRE3nyXbKSqvZM0H7s5L4M4f9wxofK6gVL6elxl7r1KHlJSHBmF2aiKGiVJVqEDd3786HCkBvfJxej+WjOQvB4y3cdK+iPo8XhMTatKVd+5lxgJ8INAKhs0zsPqSq/FOGbEYhKE2BlnQ2XvL6NRmlORUbdI8weqPQuJAH3vp7q//mFlEhMdXGMjeP0hyXI8cB1SQBAkQhROoFiKtB0X2D68HfzPVV5YE7/q6zkzGbgwOzMg2J55a9JQgHfXMPBUuIuwQ+vo/Xh5q1HOcIiBaEYSINJh3adyV4ha8HTHmF4UeLUx4wviItGzvopeDe8lw104982FngrGVnl0hlRrIvQi0zOFo2ZY4XN4qYwaizN4ta3hjGFo=
+  file_glob: true
+  file: $CRATE_NAME-$TRAVIS_TAG-$TARGET.*
+  on:
+    condition: $TRAVIS_RUST_VERSION = stable
+    tags: true
+  provider: releases
+  skip_cleanup: true
+
+cache: cargo
+before_cache:
+  - chmod -R a+r $HOME/.cargo
+
+branches:
+  only:
+    # release tags
+    - /^v\d+\.\d+\.\d+.*$/
+    - master
+
+notifications:
+  email:
+    on_success: never

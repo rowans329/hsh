@@ -1,10 +1,5 @@
 // Std imports
-use std::convert::TryInto;
 use std::str::FromStr;
-
-// External imports
-use bcrypt;
-use hex;
 
 // Internal imports
 use crate::error::{HshErr, HshResult};

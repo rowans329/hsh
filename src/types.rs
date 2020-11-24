@@ -89,7 +89,7 @@ impl FromStr for HashFunction {
             "streebog256" => Ok(Streebog256),
             "streebog512" => Ok(Streebog512),
             "whirlpool" => Ok(Whirlpool),
-            _ => Err(HshErr::InvalidHashFunction),
+            _ => Err(HshErr::InvalidHashFunction(String::from(str))),
         }
     }
 }

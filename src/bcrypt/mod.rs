@@ -9,6 +9,7 @@ use hex;
 // Internal imports
 use crate::error::{HshErr, HshResult};
 use crate::hasher::Hasher;
+use crate::types::HashOutput;
 
 #[derive(Debug)]
 pub struct Salt([u8; 16]);
@@ -43,9 +44,10 @@ pub struct BcryptHasher;
 impl Hasher for BcryptHasher {
     type HashInput = BcryptInput;
 
-    fn hash(&self, input: BcryptInput, bytes: &[u8]) -> Vec<u8> {
-        let mut hash: Vec<u8> = std::iter::repeat(0).take(24).collect();
-        bcrypt::bcrypt(input.cost, &input.salt.0, bytes, hash.as_mut());
-        hash
+    fn hash(&self, input: BcryptInput, bytes: &[u8]) -> HashOutput {
+        // let mut hash: Vec<u8> = std::iter::repeat(0).take(24).collect();
+        let mut hash: [u8; 24] = [0; 24];
+        bcrypt::bcrypt(input.cost, &input.salt.0, bytes, &mut hash);
+        HashOutput::new(hash.to_vec())
     }
 }

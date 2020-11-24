@@ -1,7 +1,6 @@
 // Std imports
 use std::error::Error;
 use std::fmt::{self, Debug, Display};
-use std::error::Error as Error;
 
 // External imports
 use hex::FromHexError;

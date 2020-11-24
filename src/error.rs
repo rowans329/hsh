@@ -1,5 +1,6 @@
 // Std imports
 use std::fmt::{self, Debug, Display};
+use std::error::Error as Error;
 
 // External imports
 use hex::FromHexError;
@@ -23,5 +24,7 @@ impl Display for HshErr {
         Debug::fmt(self, f)
     }
 }
+
+impl Error for HshErr {}
 
 pub type HshResult<T> = Result<T, HshErr>;

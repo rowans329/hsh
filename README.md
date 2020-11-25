@@ -8,7 +8,7 @@ hsh is a simple string-hashing CLI written entirely in Rust that supports a wide
 
 * [Bcrypt](https://en.wikipedia.org/wiki/Bcrypt)
 * [BLAKE2](https://en.wikipedia.org/wiki/BLAKE_(hash_function)#BLAKE2)
-* [GOST](https://en.wikipedia.org/wiki/GOST_(hash_function)) (GOST R 34.11-9) (with both "test parameters" and CryptoPro [S-Box parameters](https://en.wikipedia.org/wiki/GOST_(hash_function)#Initial_values)
+* [GOST](https://en.wikipedia.org/wiki/GOST_(hash_function)) (GOST R 34.11-9) (with both "test parameters" and CryptoPro [S-Box parameters](https://en.wikipedia.org/wiki/GOST_(hash_function)#Initial_values))
 * [Grøstl](https://en.wikipedia.org/wiki/Grøstl)
    * Grøstl224
    * Grøstl256

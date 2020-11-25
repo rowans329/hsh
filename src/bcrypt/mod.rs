@@ -17,7 +17,7 @@ impl Salt {
     fn from_vec(data: Vec<u8>) -> HshResult<Self> {
         if data.len() != 16 {
             return Err(HshErr::InvalidSalt(format!(
-                "incorrect hex length (should be 16 bytes, found {})",
+                "incorrect salt length (should be 16 bytes, found {})",
                 data.len()
             )));
         }

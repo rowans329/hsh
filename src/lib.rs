@@ -131,3 +131,70 @@ pub fn hash(
         Whirlpool => WhirlpoolHasher.hash_str((), string),
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use proptest::prelude::*;
+
+    proptest! {
+        #[test]
+        #[ignore]
+        fn fuzz_hash_does_not_panic(
+            str in ".+",
+            function in random_function(),
+            cost in random_cost(),
+            salt in random_salt(),
+        ) {
+            let _ = hash(&str, function, cost, salt);
+        }
+    }
+
+    fn random_function() -> impl Strategy<Value = HashFunction> {
+        prop_oneof![
+            Just(HashFunction::Bcrypt),
+            Just(HashFunction::Blake2),
+            Just(HashFunction::Gost94Test),
+            Just(HashFunction::Gost94CryptoPro),
+            Just(HashFunction::Groestl224),
+            Just(HashFunction::Groestl256),
+            Just(HashFunction::Groestl384),
+            Just(HashFunction::Groestl512),
+            Just(HashFunction::Md2),
+            Just(HashFunction::Md4),
+            Just(HashFunction::Md5),
+            Just(HashFunction::Ripemd160),
+            Just(HashFunction::Ripemd320),
+            Just(HashFunction::Sha1),
+            Just(HashFunction::Sha224),
+            Just(HashFunction::Sha256),
+            Just(HashFunction::Sha384),
+            Just(HashFunction::Sha512),
+            Just(HashFunction::Sha3_224),
+            Just(HashFunction::Sha3_256),
+            Just(HashFunction::Sha3_384),
+            Just(HashFunction::Sha3_512),
+            Just(HashFunction::Keccak224),
+            Just(HashFunction::Keccak256),
+            Just(HashFunction::Keccak256Full),
+            Just(HashFunction::Keccak384),
+            Just(HashFunction::Keccak512),
+            Just(HashFunction::Shabal192),
+            Just(HashFunction::Shabal224),
+            Just(HashFunction::Shabal256),
+            Just(HashFunction::Shabal384),
+            Just(HashFunction::Shabal512),
+            Just(HashFunction::Streebog256),
+            Just(HashFunction::Streebog512),
+            Just(HashFunction::Whirlpool),
+        ]
+    }
+
+    fn random_cost() -> BoxedStrategy<Option<u32>> {
+        proptest::option::of(any::<u32>()).boxed()
+    }
+
+    fn random_salt() -> BoxedStrategy<Option<Salt>> {
+        proptest::option::of(([any::<u8>(); 16]).prop_map(|arr| Salt::new(arr))).boxed()
+    }
+}

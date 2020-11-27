@@ -16,3 +16,47 @@ impl Hasher for Groestl256Hasher {
         HashOutput::new(hasher.finalize())
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use proptest::prelude::*;
+
+    #[test]
+    fn test_groestl256_hash_password() {
+        let password = "password";
+
+        let hash = Groestl256Hasher.hash_str((), password);
+
+        assert_eq!(
+            "5fc07d8c8d9d54bf2733c8f3d4d2aa8b3f1603970001fc987f1cdecde18f520f",
+            hash.as_hex()
+        );
+    }
+
+    #[test]
+    fn test_groestl256_hash_bytes() {
+        let bytes = b"password";
+
+        let hash = Groestl256Hasher.hash((), bytes);
+
+        assert_eq!(
+            "5fc07d8c8d9d54bf2733c8f3d4d2aa8b3f1603970001fc987f1cdecde18f520f",
+            hash.as_hex()
+        );
+    }
+
+    proptest! {
+        #[test]
+        fn fuzz_groestl256_hash_does_not_panic(pass in ".*") {
+            let _ = Groestl256Hasher.hash_str((), &pass);
+        }
+
+        #[test]
+        fn fuzz_groestl256_hash_bytes_does_not_panic(
+            bytes in proptest::collection::vec(any::<u8>(), 0..1000)
+        ) {
+            let _ = Groestl256Hasher.hash((), &bytes);
+        }
+    }
+}

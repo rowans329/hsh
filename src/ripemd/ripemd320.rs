@@ -28,7 +28,10 @@ mod test {
 
         let hash = Ripemd320Hasher.hash_str((), password);
 
-        assert_eq!("c571d82e535de67ff5f87e417b3d53125f2d83ed7598b89d74483e6c0dfe8d86e88b380249fc8fb4", hash.as_hex());
+        assert_eq!(
+            "c571d82e535de67ff5f87e417b3d53125f2d83ed7598b89d74483e6c0dfe8d86e88b380249fc8fb4",
+            hash.as_hex()
+        );
     }
 
     #[test]
@@ -37,7 +40,10 @@ mod test {
 
         let hash = Ripemd320Hasher.hash((), bytes);
 
-        assert_eq!("c571d82e535de67ff5f87e417b3d53125f2d83ed7598b89d74483e6c0dfe8d86e88b380249fc8fb4", hash.as_hex());
+        assert_eq!(
+            "c571d82e535de67ff5f87e417b3d53125f2d83ed7598b89d74483e6c0dfe8d86e88b380249fc8fb4",
+            hash.as_hex()
+        );
     }
 
     proptest! {

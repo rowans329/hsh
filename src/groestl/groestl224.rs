@@ -28,7 +28,10 @@ mod test {
 
         let hash = Groestl224Hasher.hash_str((), password);
 
-        assert_eq!("dbe1a8a95773766b4e80a4ab34232dfb63a23253106896c83c2edb45", hash.as_hex());
+        assert_eq!(
+            "dbe1a8a95773766b4e80a4ab34232dfb63a23253106896c83c2edb45",
+            hash.as_hex()
+        );
     }
 
     #[test]
@@ -37,7 +40,10 @@ mod test {
 
         let hash = Groestl224Hasher.hash((), bytes);
 
-        assert_eq!("dbe1a8a95773766b4e80a4ab34232dfb63a23253106896c83c2edb45", hash.as_hex());
+        assert_eq!(
+            "dbe1a8a95773766b4e80a4ab34232dfb63a23253106896c83c2edb45",
+            hash.as_hex()
+        );
     }
 
     proptest! {

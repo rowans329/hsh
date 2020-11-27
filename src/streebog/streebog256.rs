@@ -28,7 +28,10 @@ mod test {
 
         let hash = Streebog256Hasher.hash_str((), password);
 
-        assert_eq!("568c150cc0d9a006cf9c4f280a427686e8f46c543ada3dabe83199dd8fa82141", hash.as_hex());
+        assert_eq!(
+            "568c150cc0d9a006cf9c4f280a427686e8f46c543ada3dabe83199dd8fa82141",
+            hash.as_hex()
+        );
     }
 
     #[test]
@@ -37,7 +40,10 @@ mod test {
 
         let hash = Streebog256Hasher.hash((), bytes);
 
-        assert_eq!("568c150cc0d9a006cf9c4f280a427686e8f46c543ada3dabe83199dd8fa82141", hash.as_hex());
+        assert_eq!(
+            "568c150cc0d9a006cf9c4f280a427686e8f46c543ada3dabe83199dd8fa82141",
+            hash.as_hex()
+        );
     }
 
     proptest! {

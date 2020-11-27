@@ -28,7 +28,10 @@ mod test {
 
         let hash = Shabal256Hasher.hash_str((), password);
 
-        assert_eq!("efb82bf2dc681f74951a61a8795606a47d1cdf573980d3cf65a3cb3371e8e7a8", hash.as_hex());
+        assert_eq!(
+            "efb82bf2dc681f74951a61a8795606a47d1cdf573980d3cf65a3cb3371e8e7a8",
+            hash.as_hex()
+        );
     }
 
     #[test]
@@ -37,7 +40,10 @@ mod test {
 
         let hash = Shabal256Hasher.hash((), bytes);
 
-        assert_eq!("efb82bf2dc681f74951a61a8795606a47d1cdf573980d3cf65a3cb3371e8e7a8", hash.as_hex());
+        assert_eq!(
+            "efb82bf2dc681f74951a61a8795606a47d1cdf573980d3cf65a3cb3371e8e7a8",
+            hash.as_hex()
+        );
     }
 
     proptest! {

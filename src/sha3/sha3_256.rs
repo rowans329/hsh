@@ -28,7 +28,10 @@ mod test {
 
         let hash = Sha3_256Hasher.hash_str((), password);
 
-        assert_eq!("c0067d4af4e87f00dbac63b6156828237059172d1bbeac67427345d6a9fda484", hash.as_hex());
+        assert_eq!(
+            "c0067d4af4e87f00dbac63b6156828237059172d1bbeac67427345d6a9fda484",
+            hash.as_hex()
+        );
     }
 
     #[test]
@@ -37,7 +40,10 @@ mod test {
 
         let hash = Sha3_256Hasher.hash((), bytes);
 
-        assert_eq!("c0067d4af4e87f00dbac63b6156828237059172d1bbeac67427345d6a9fda484", hash.as_hex());
+        assert_eq!(
+            "c0067d4af4e87f00dbac63b6156828237059172d1bbeac67427345d6a9fda484",
+            hash.as_hex()
+        );
     }
 
     proptest! {

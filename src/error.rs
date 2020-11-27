@@ -16,7 +16,9 @@ pub enum HshErr {
 impl Debug for HshErr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            HshErr::InvalidHashFunction(str) => f.write_str(&format!("invalid hash function `{}`", str)),
+            HshErr::InvalidHashFunction(str) => {
+                f.write_str(&format!("invalid hash function `{}`", str))
+            }
             HshErr::InvalidSaltHex(err) => f.write_str(&format!("invalid salt hex -- {}", err)),
             HshErr::InvalidSalt(str) => f.write_str(&format!("invalid salt -- {}", str)),
         }
@@ -43,10 +45,7 @@ mod test {
 
         let err_msg = format!("{:?}", err);
 
-        assert_eq!(
-            format!("invalid hash function `foobar`"),
-            err_msg,
-        )
+        assert_eq!(format!("invalid hash function `foobar`"), err_msg,)
     }
 
     #[test]
@@ -55,10 +54,7 @@ mod test {
 
         let err_msg = format!("{:?}", err);
 
-        assert_eq!(
-            format!("invalid salt -- foobar"),
-            err_msg,
-        )
+        assert_eq!(format!("invalid salt -- foobar"), err_msg,)
     }
 
     #[test]
@@ -67,10 +63,7 @@ mod test {
 
         let err_msg = format!("{:?}", err);
 
-        assert_eq!(
-            format!("invalid salt hex -- Odd number of digits"),
-            err_msg,
-        )
+        assert_eq!(format!("invalid salt hex -- Odd number of digits"), err_msg,)
     }
 
     #[test]
@@ -79,10 +72,7 @@ mod test {
 
         let err_msg = format!("{}", err);
 
-        assert_eq!(
-            format!("invalid hash function `foobar`"),
-            err_msg,
-        )
+        assert_eq!(format!("invalid hash function `foobar`"), err_msg,)
     }
 
     #[test]
@@ -91,10 +81,7 @@ mod test {
 
         let err_msg = format!("{}", err);
 
-        assert_eq!(
-            format!("invalid salt -- foobar"),
-            err_msg,
-        )
+        assert_eq!(format!("invalid salt -- foobar"), err_msg,)
     }
 
     #[test]
@@ -103,9 +90,6 @@ mod test {
 
         let err_msg = format!("{}", err);
 
-        assert_eq!(
-            format!("invalid salt hex -- Odd number of digits"),
-            err_msg,
-        )
+        assert_eq!(format!("invalid salt hex -- Odd number of digits"), err_msg,)
     }
 }

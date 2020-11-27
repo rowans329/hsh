@@ -43,7 +43,10 @@ mod test {
 
         let hash = Gost94Hasher.hash_str(SBox::Test, password);
 
-        assert_eq!("db4d9992897eda89b50f1d3208db607902da7e79c6f3bc6e6933cc5919068564", hash.as_hex());
+        assert_eq!(
+            "db4d9992897eda89b50f1d3208db607902da7e79c6f3bc6e6933cc5919068564",
+            hash.as_hex()
+        );
     }
 
     #[test]
@@ -52,7 +55,10 @@ mod test {
 
         let hash = Gost94Hasher.hash_str(SBox::CryptoPro, password);
 
-        assert_eq!("9de785f479c3d3b2ababef7f4738817e10b656f854e64d023ec58931d2464d8f", hash.as_hex());
+        assert_eq!(
+            "9de785f479c3d3b2ababef7f4738817e10b656f854e64d023ec58931d2464d8f",
+            hash.as_hex()
+        );
     }
 
     #[test]
@@ -61,7 +67,10 @@ mod test {
 
         let hash = Gost94Hasher.hash(SBox::Test, bytes);
 
-        assert_eq!("db4d9992897eda89b50f1d3208db607902da7e79c6f3bc6e6933cc5919068564", hash.as_hex());
+        assert_eq!(
+            "db4d9992897eda89b50f1d3208db607902da7e79c6f3bc6e6933cc5919068564",
+            hash.as_hex()
+        );
     }
 
     #[test]
@@ -70,7 +79,10 @@ mod test {
 
         let hash = Gost94Hasher.hash(SBox::CryptoPro, bytes);
 
-        assert_eq!("9de785f479c3d3b2ababef7f4738817e10b656f854e64d023ec58931d2464d8f", hash.as_hex());
+        assert_eq!(
+            "9de785f479c3d3b2ababef7f4738817e10b656f854e64d023ec58931d2464d8f",
+            hash.as_hex()
+        );
     }
 
     proptest! {
@@ -89,9 +101,6 @@ mod test {
     }
 
     fn random_sbox() -> impl Strategy<Value = SBox> {
-        prop_oneof![
-            Just(SBox::Test),
-            Just(SBox::CryptoPro),
-        ]
+        prop_oneof![Just(SBox::Test), Just(SBox::CryptoPro),]
     }
 }

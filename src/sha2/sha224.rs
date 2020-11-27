@@ -28,7 +28,10 @@ mod test {
 
         let hash = Sha224Hasher.hash_str((), password);
 
-        assert_eq!("d63dc919e201d7bc4c825630d2cf25fdc93d4b2f0d46706d29038d01", hash.as_hex());
+        assert_eq!(
+            "d63dc919e201d7bc4c825630d2cf25fdc93d4b2f0d46706d29038d01",
+            hash.as_hex()
+        );
     }
 
     #[test]
@@ -37,7 +40,10 @@ mod test {
 
         let hash = Sha224Hasher.hash((), bytes);
 
-        assert_eq!("d63dc919e201d7bc4c825630d2cf25fdc93d4b2f0d46706d29038d01", hash.as_hex());
+        assert_eq!(
+            "d63dc919e201d7bc4c825630d2cf25fdc93d4b2f0d46706d29038d01",
+            hash.as_hex()
+        );
     }
 
     proptest! {

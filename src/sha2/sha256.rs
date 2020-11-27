@@ -28,7 +28,10 @@ mod test {
 
         let hash = Sha256Hasher.hash_str((), password);
 
-        assert_eq!("5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8", hash.as_hex());
+        assert_eq!(
+            "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",
+            hash.as_hex()
+        );
     }
 
     #[test]
@@ -37,7 +40,10 @@ mod test {
 
         let hash = Sha256Hasher.hash((), bytes);
 
-        assert_eq!("5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8", hash.as_hex());
+        assert_eq!(
+            "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",
+            hash.as_hex()
+        );
     }
 
     proptest! {

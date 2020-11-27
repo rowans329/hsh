@@ -72,8 +72,8 @@ impl Hasher for BcryptHasher {
 
 #[cfg(test)]
 mod test {
-    use proptest::prelude::*;
     use super::*;
+    use proptest::prelude::*;
 
     #[test]
     fn test_salt_new() {
@@ -100,8 +100,8 @@ mod test {
         let err = Salt::from_vec(bytes).unwrap_err();
 
         assert_eq!(
-            HshErr::InvalidSalt(
-                String::from("incorrect salt length (should be 16 bytes, found 0)"
+            HshErr::InvalidSalt(String::from(
+                "incorrect salt length (should be 16 bytes, found 0)"
             )),
             err,
         )
@@ -109,13 +109,15 @@ mod test {
 
     #[test]
     fn test_salt_from_vec_long() {
-        let bytes = vec![8, 42, 4, 0, 72, 83, 5, 4, 185, 4, 68, 42, 9, 0, 2, 84, 4, 82, 5, 216, 0, 137];
+        let bytes = vec![
+            8, 42, 4, 0, 72, 83, 5, 4, 185, 4, 68, 42, 9, 0, 2, 84, 4, 82, 5, 216, 0, 137,
+        ];
 
         let err = Salt::from_vec(bytes).unwrap_err();
 
         assert_eq!(
-            HshErr::InvalidSalt(
-                String::from("incorrect salt length (should be 16 bytes, found 22)"
+            HshErr::InvalidSalt(String::from(
+                "incorrect salt length (should be 16 bytes, found 22)"
             )),
             err,
         );
@@ -161,20 +163,25 @@ mod test {
         let err = Salt::from_str(&hex).unwrap_err();
         let err_msg = format!("{}", err);
 
-        assert_eq!("invalid salt hex -- Invalid character 'n' at position 1", err_msg);
+        assert_eq!(
+            "invalid salt hex -- Invalid character 'n' at position 1",
+            err_msg
+        );
     }
 
     #[test]
     fn test_salt_from_str_long() {
-        let bytes = [8, 42, 4, 0, 72, 83, 5, 4, 185, 4, 68, 42, 9, 0, 2, 84, 4, 82, 5, 216, 0, 137];
+        let bytes = [
+            8, 42, 4, 0, 72, 83, 5, 4, 185, 4, 68, 42, 9, 0, 2, 84, 4, 82, 5, 216, 0, 137,
+        ];
         let hex = hex::encode(bytes);
 
         let err = Salt::from_str(&hex).unwrap_err();
 
         assert_eq!(
-            HshErr::InvalidSalt(
-                String::from("incorrect salt length (should be 16 bytes, found 22)")
-            ),
+            HshErr::InvalidSalt(String::from(
+                "incorrect salt length (should be 16 bytes, found 22)"
+            )),
             err
         );
     }
@@ -200,7 +207,10 @@ mod test {
 
         let hash = BcryptHasher.hash_str(input, password);
 
-        assert_eq!("dfcd71d5fb5c9f17bddc20eff324be2926529c01c440fcfb", hash.as_hex());
+        assert_eq!(
+            "dfcd71d5fb5c9f17bddc20eff324be2926529c01c440fcfb",
+            hash.as_hex()
+        );
     }
 
     #[test]
@@ -213,7 +223,10 @@ mod test {
 
         let hash = BcryptHasher.hash(input, bytes);
 
-        assert_eq!("dfcd71d5fb5c9f17bddc20eff324be2926529c01c440fcfb", hash.as_hex());
+        assert_eq!(
+            "dfcd71d5fb5c9f17bddc20eff324be2926529c01c440fcfb",
+            hash.as_hex()
+        );
     }
 
     proptest! {
@@ -281,11 +294,8 @@ mod test {
     }
 
     fn arbitrary_input() -> BoxedStrategy<BcryptInput> {
-        (
-            any::<u32>(),
-            ([any::<u8>(); 16]).prop_map(|arr| Salt(arr)),
-        )
-        .prop_map(|(cost, salt)| BcryptInput::new(cost, salt))
-        .boxed()
+        (any::<u32>(), ([any::<u8>(); 16]).prop_map(|arr| Salt(arr)))
+            .prop_map(|(cost, salt)| BcryptInput::new(cost, salt))
+            .boxed()
     }
 }

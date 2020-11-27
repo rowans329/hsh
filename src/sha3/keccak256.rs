@@ -28,7 +28,10 @@ mod test {
 
         let hash = Keccak256Hasher.hash_str((), password);
 
-        assert_eq!("b68fe43f0d1a0d7aef123722670be50268e15365401c442f8806ef83b612976b", hash.as_hex());
+        assert_eq!(
+            "b68fe43f0d1a0d7aef123722670be50268e15365401c442f8806ef83b612976b",
+            hash.as_hex()
+        );
     }
 
     #[test]
@@ -37,7 +40,10 @@ mod test {
 
         let hash = Keccak256Hasher.hash((), bytes);
 
-        assert_eq!("b68fe43f0d1a0d7aef123722670be50268e15365401c442f8806ef83b612976b", hash.as_hex());
+        assert_eq!(
+            "b68fe43f0d1a0d7aef123722670be50268e15365401c442f8806ef83b612976b",
+            hash.as_hex()
+        );
     }
 
     proptest! {

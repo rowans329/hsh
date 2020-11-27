@@ -16,3 +16,41 @@ impl Hasher for Keccak512Hasher {
         HashOutput::new(hasher.finalize())
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use proptest::prelude::*;
+
+    #[test]
+    fn test_keccak512_hash_password() {
+        let password = "password";
+
+        let hash = Keccak512Hasher.hash_str((), password);
+
+        assert_eq!("a6818b8188b36c44d17784c5551f63accc5deaf8786f9d0ad1ae3cd8d887cbab4f777286dbb315fb14854c8774dc0d10b5567e4a705536cc2a1d61ec0a16a7a6", hash.as_hex());
+    }
+
+    #[test]
+    fn test_keccak512_hash_bytes() {
+        let bytes = b"password";
+
+        let hash = Keccak512Hasher.hash((), bytes);
+
+        assert_eq!("a6818b8188b36c44d17784c5551f63accc5deaf8786f9d0ad1ae3cd8d887cbab4f777286dbb315fb14854c8774dc0d10b5567e4a705536cc2a1d61ec0a16a7a6", hash.as_hex());
+    }
+
+    proptest! {
+        #[test]
+        fn fuzz_keccak512_hash_does_not_panic(pass in ".*") {
+            let _ = Keccak512Hasher.hash_str((), &pass);
+        }
+
+        #[test]
+        fn fuzz_keccak512_hash_bytes_does_not_panic(
+            bytes in proptest::collection::vec(any::<u8>(), 0..1000)
+        ) {
+            let _ = Keccak512Hasher.hash((), &bytes);
+        }
+    }
+}

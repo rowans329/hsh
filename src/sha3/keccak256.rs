@@ -16,3 +16,41 @@ impl Hasher for Keccak256Hasher {
         HashOutput::new(hasher.finalize())
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use proptest::prelude::*;
+
+    #[test]
+    fn test_keccak256_hash_password() {
+        let password = "password";
+
+        let hash = Keccak256Hasher.hash_str((), password);
+
+        assert_eq!("b68fe43f0d1a0d7aef123722670be50268e15365401c442f8806ef83b612976b", hash.as_hex());
+    }
+
+    #[test]
+    fn test_keccak256_hash_bytes() {
+        let bytes = b"password";
+
+        let hash = Keccak256Hasher.hash((), bytes);
+
+        assert_eq!("b68fe43f0d1a0d7aef123722670be50268e15365401c442f8806ef83b612976b", hash.as_hex());
+    }
+
+    proptest! {
+        #[test]
+        fn fuzz_keccak256_hash_does_not_panic(pass in ".*") {
+            let _ = Keccak256Hasher.hash_str((), &pass);
+        }
+
+        #[test]
+        fn fuzz_keccak256_hash_bytes_does_not_panic(
+            bytes in proptest::collection::vec(any::<u8>(), 0..1000)
+        ) {
+            let _ = Keccak256Hasher.hash((), &bytes);
+        }
+    }
+}

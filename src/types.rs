@@ -8,7 +8,7 @@ use crate::error::{HshErr, HshResult};
 // Re-exports
 pub use crate::bcrypt::Salt;
 
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum HashFunction {
     Bcrypt,
     Blake2,
@@ -119,5 +119,117 @@ impl HashOutput {
 
     pub fn into_hex(self) -> String {
         hex::encode(self.bytes)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use proptest::prelude::*;
+
+    #[test]
+    fn test_hash_function_from_str_valid() {
+        let function = HashFunction::from_str("shabal192").unwrap();
+        assert_eq!(HashFunction::Shabal192, function);
+    }
+
+    #[test]
+    fn test_hash_function_from_empty_str() {
+        let err = HashFunction::from_str("").unwrap_err();
+        assert_eq!(HshErr::InvalidHashFunction(String::from("")), err);
+    }
+
+    #[test]
+    fn test_hash_function_from_str_invalid() {
+        let err = HashFunction::from_str("foobar").unwrap_err();
+        assert_eq!(HshErr::InvalidHashFunction(String::from("foobar")), err);
+    }
+
+    #[test]
+    fn test_hash_output_new_from_array() {
+        let bytes = [4, 246, 0, 2, 6, 6, 2, 73, 26, 9, 3, 1, 10, 1, 3, 9];
+        let output = HashOutput::new(bytes.to_vec());
+        assert_eq!(bytes.to_vec(), output.bytes);
+    }
+
+    #[test]
+    fn test_hash_output_new_from_vec() {
+        let bytes = vec![4, 246, 0, 2, 6, 6, 2, 73, 26, 9, 3, 1, 10, 1, 3, 9];
+        let output = HashOutput::new(bytes.clone());
+        assert_eq!(bytes, output.bytes);
+    }
+
+    #[test]
+    fn test_hash_output_as_bytes() {
+        let bytes = vec![4, 246, 0, 2, 6, 6, 2, 73, 26, 9, 3, 1, 10, 1, 3, 9];
+        let output = HashOutput::new(bytes.clone());
+        assert_eq!(bytes.as_slice(), output.as_bytes());
+    }
+
+    #[test]
+    fn test_hash_output_into_bytes() {
+        let bytes = vec![4, 246, 0, 2, 6, 6, 2, 73, 26, 9, 3, 1, 10, 1, 3, 9];
+        let output = HashOutput::new(bytes.clone());
+        assert_eq!(bytes, output.into_bytes());
+    }
+
+    #[test]
+    fn test_hash_output_as_hex() {
+        let bytes = [4, 246, 0, 2, 6, 6, 2, 73, 26, 9, 3, 1, 10, 1, 3, 9];
+        let output = HashOutput::new(bytes.to_vec());
+        assert_eq!("04f60002060602491a0903010a010309", &output.as_hex());
+    }
+
+    #[test]
+    fn test_hash_output_into_hex() {
+        let bytes = [4, 246, 0, 2, 6, 6, 2, 73, 26, 9, 3, 1, 10, 1, 3, 9];
+        let output = HashOutput::new(bytes.to_vec());
+        assert_eq!("04f60002060602491a0903010a010309", &output.into_hex());
+    }
+
+    proptest! {
+        #[test]
+        fn fuzz_hash_function_from_str_does_not_panic(str in ".*") {
+            let _ = HashFunction::from_str(&str);
+        }
+
+        #[test]
+        fn fuzz_hash_output_new_does_not_panic(
+            bytes in proptest::collection::vec(any::<u8>(), 0..1000)
+        ) {
+            let _ = HashOutput::new(bytes);
+        }
+
+        #[test]
+        fn fuzz_hash_output_as_bytes(
+            bytes in proptest::collection::vec(any::<u8>(), 0..1000)
+        ) {
+            let output = HashOutput::new(bytes.clone());
+            assert_eq!(bytes.as_slice(), output.as_bytes());
+        }
+
+        #[test]
+        fn fuzz_hash_output_into_bytes(
+            bytes in proptest::collection::vec(any::<u8>(), 0..1000)
+        ) {
+            let output = HashOutput::new(bytes.clone());
+            assert_eq!(bytes, output.into_bytes());
+        }
+
+        #[test]
+        fn fuzz_hash_output_as_hex(
+            bytes in proptest::collection::vec(any::<u8>(), 0..1000)
+        ) {
+            let output = HashOutput::new(bytes.clone());
+            assert_eq!(hex::encode(bytes), output.as_hex());
+        }
+
+        #[test]
+        fn fuzz_hash_output_into_hex(
+            bytes in proptest::collection::vec(any::<u8>(), 0..1000)
+        ) {
+            let output = HashOutput::new(bytes.clone());
+            assert_eq!(hex::encode(bytes), output.as_hex());
+        }
     }
 }

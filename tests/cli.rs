@@ -97,14 +97,7 @@ fn missing_bcrypt_salt() -> Result<(), Box<dyn Error>> {
 
 #[test]
 fn bcrypt_invalid_salt_hex_odd_digits() -> Result<(), Box<dyn Error>> {
-    let cmd = setup(vec![
-        "Hello, world!",
-        "bcrypt",
-        "-c",
-        "1",
-        "-s",
-        "1a54e",
-    ])?;
+    let cmd = setup(vec!["Hello, world!", "bcrypt", "-c", "1", "-s", "1a54e"])?;
 
     assert_errors(cmd, vec!["invalid salt hex -- Odd number of digits"]);
 

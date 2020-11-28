@@ -139,7 +139,6 @@ mod test {
 
     proptest! {
         #[test]
-        #[ignore]
         fn fuzz_hash_does_not_panic(
             str in ".+",
             function in random_function(),

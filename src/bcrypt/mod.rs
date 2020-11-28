@@ -275,7 +275,6 @@ mod test {
         }
 
         #[test]
-        #[ignore]
         fn fuzz_bcrypt_hash_does_not_panic(
             input in arbitrary_input(),
             pass in ".{1,72}",
@@ -284,7 +283,6 @@ mod test {
         }
 
         #[test]
-        #[ignore]
         fn fuzz_bcrypt_hash_bytes_does_not_panic(
             input in arbitrary_input(),
             bytes in proptest::collection::vec(any::<u8>(), 1..72),

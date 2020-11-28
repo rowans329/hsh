@@ -9,14 +9,16 @@ use hsh::{
 
 #[derive(Debug, StructOpt)]
 struct Opt {
+    /// The string to be hashed
     #[structopt()]
     string: String,
-    #[structopt(short, long)]
+    /// The hash function to use
+    #[structopt(possible_values = &HashFunction::variants(), case_insensitive=true)]
     function: HashFunction,
-    #[structopt(short, long)]
-    bytes: bool,
+    /// The cost to use when hashing with the Bcrypt hash function
     #[structopt(short, long, required_if("function", "bcrypt"))]
     cost: Option<u32>,
+    /// The 16-byte salt to use when hashing with the Bcrypt hash function
     #[structopt(short, long, required_if("function", "bcrypt"))]
     salt: Option<Salt>,
 }
@@ -24,9 +26,5 @@ struct Opt {
 fn main() {
     let opt = Opt::from_args();
     let hash = hash(&opt.string, opt.function, opt.cost, opt.salt);
-    if opt.bytes {
-        println!("{:?}", hash.as_bytes());
-    } else {
-        println!("{}", hash.as_hex());
-    }
+    println!("{}", hash.as_hex());
 }

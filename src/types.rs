@@ -47,6 +47,48 @@ pub enum HashFunction {
     Whirlpool,
 }
 
+impl HashFunction {
+    pub fn variants() -> Vec<&'static str> {
+        vec![
+            "bcrypt",
+            "blake2",
+            "gost94test",
+            "gost94crypto",
+            "groestl224",
+            "groestl256",
+            "groestl384",
+            "groestl512",
+            "keccak224",
+            "keccak256",
+            "keccak256full",
+            "keccak384",
+            "keccak512",
+            "md2",
+            "md4",
+            "md5",
+            "ripemd160",
+            "ripemd320",
+            "sha1",
+            "sha224",
+            "sha256",
+            "sha384",
+            "sha512",
+            "sha3-224",
+            "sha3-256",
+            "sha3-384",
+            "sha3-512",
+            "shabal192",
+            "shabal224",
+            "shabal256",
+            "shabal384",
+            "shabal512",
+            "streebog256",
+            "streebog512",
+            "whirlpool",
+        ]
+    }
+}
+
 impl FromStr for HashFunction {
     type Err = HshErr;
 
@@ -77,10 +119,10 @@ impl FromStr for HashFunction {
             "sha256" => Ok(Sha256),
             "sha384" => Ok(Sha384),
             "sha512" => Ok(Sha512),
-            "sha3_224" => Ok(Sha3_224),
-            "sha3_256" => Ok(Sha3_256),
-            "sha3_384" => Ok(Sha3_384),
-            "sha3_512" => Ok(Sha3_512),
+            "sha3-224" => Ok(Sha3_224),
+            "sha3-256" => Ok(Sha3_256),
+            "sha3-384" => Ok(Sha3_384),
+            "sha3-512" => Ok(Sha3_512),
             "shabal192" => Ok(Shabal192),
             "shabal224" => Ok(Shabal224),
             "shabal256" => Ok(Shabal256),
@@ -94,6 +136,7 @@ impl FromStr for HashFunction {
     }
 }
 
+#[derive(Debug)]
 pub struct HashOutput {
     bytes: Vec<u8>,
 }
@@ -143,6 +186,51 @@ mod test {
     fn test_hash_function_from_str_invalid() {
         let err = HashFunction::from_str("foobar").unwrap_err();
         assert_eq!(HshErr::InvalidHashFunction(String::from("foobar")), err);
+    }
+
+    #[test]
+    fn test_hash_function_variants() {
+        let variants = HashFunction::variants();
+        assert_eq!(
+            vec![
+                "bcrypt",
+                "blake2",
+                "gost94test",
+                "gost94crypto",
+                "groestl224",
+                "groestl256",
+                "groestl384",
+                "groestl512",
+                "keccak224",
+                "keccak256",
+                "keccak256full",
+                "keccak384",
+                "keccak512",
+                "md2",
+                "md4",
+                "md5",
+                "ripemd160",
+                "ripemd320",
+                "sha1",
+                "sha224",
+                "sha256",
+                "sha384",
+                "sha512",
+                "sha3-224",
+                "sha3-256",
+                "sha3-384",
+                "sha3-512",
+                "shabal192",
+                "shabal224",
+                "shabal256",
+                "shabal384",
+                "shabal512",
+                "streebog256",
+                "streebog512",
+                "whirlpool",
+            ],
+            variants,
+        )
     }
 
     #[test]

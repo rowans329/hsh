@@ -40,7 +40,7 @@ fn missing_args() -> Result<(), Box<dyn Error>> {
         vec![
             "The following required arguments were not provided:",
             "<string>",
-            "--function <function>",
+            "<function>",
         ],
     );
 
@@ -49,16 +49,16 @@ fn missing_args() -> Result<(), Box<dyn Error>> {
 
 #[test]
 fn invalid_hash_function() -> Result<(), Box<dyn Error>> {
-    let cmd = setup(vec!["Hello, world!", "-f", "foo"])?;
+    let cmd = setup(vec!["Hello, world!", "foo"])?;
 
-    assert_errors(cmd, vec!["invalid hash function `foo`"]);
+    assert_errors(cmd, vec!["'foo' isn't a valid value for '<function>'"]);
 
     Ok(())
 }
 
 #[test]
 fn sha1_hex_test() -> Result<(), Box<dyn Error>> {
-    let cmd = setup(vec!["Hello, world!", "-f", "sha1"])?;
+    let cmd = setup(vec!["Hello, world!", "sha1"])?;
 
     assert_success(cmd, vec!["943a702d06f34599aee1f8da8ef9f7296031d699"]);
 
@@ -66,17 +66,8 @@ fn sha1_hex_test() -> Result<(), Box<dyn Error>> {
 }
 
 #[test]
-fn sha1_bytes_test() -> Result<(), Box<dyn Error>> {
-    let cmd = setup(vec!["Hello, world!", "-bf", "sha1"])?;
-
-    assert_success(cmd, vec!["[148, 58, 112, 45, 6, 243, 69, 153, 174, 225, 248, 218, 142, 249, 247, 41, 96, 49, 214, 153]"]);
-
-    Ok(())
-}
-
-#[test]
 fn missing_bcrypt_inputs() -> Result<(), Box<dyn Error>> {
-    let cmd = setup(vec!["Hello, world!", "-f", "bcrypt"])?;
+    let cmd = setup(vec!["Hello, world!", "bcrypt"])?;
 
     assert_errors(
         cmd,
@@ -91,7 +82,7 @@ fn missing_bcrypt_inputs() -> Result<(), Box<dyn Error>> {
 
 #[test]
 fn missing_bcrypt_salt() -> Result<(), Box<dyn Error>> {
-    let cmd = setup(vec!["Hello, world!", "-f", "bcrypt", "-c", "1"])?;
+    let cmd = setup(vec!["Hello, world!", "bcrypt", "-c", "1"])?;
 
     assert_errors(
         cmd,
@@ -108,7 +99,6 @@ fn missing_bcrypt_salt() -> Result<(), Box<dyn Error>> {
 fn bcrypt_invalid_salt_hex_odd_digits() -> Result<(), Box<dyn Error>> {
     let cmd = setup(vec![
         "Hello, world!",
-        "-f",
         "bcrypt",
         "-c",
         "1",
@@ -125,7 +115,6 @@ fn bcrypt_invalid_salt_hex_odd_digits() -> Result<(), Box<dyn Error>> {
 fn bcrypt_invalid_salt_incorrect_length_short() -> Result<(), Box<dyn Error>> {
     let cmd = setup(vec![
         "Hello, world!",
-        "-f",
         "bcrypt",
         "-c",
         "1",
@@ -145,7 +134,6 @@ fn bcrypt_invalid_salt_incorrect_length_short() -> Result<(), Box<dyn Error>> {
 fn bcrypt_invalid_salt_incorrect_length_long() -> Result<(), Box<dyn Error>> {
     let cmd = setup(vec![
         "Hello, world!",
-        "-f",
         "bcrypt",
         "-c",
         "1",
@@ -165,7 +153,6 @@ fn bcrypt_invalid_salt_incorrect_length_long() -> Result<(), Box<dyn Error>> {
 fn bcrypt_hex_test() -> Result<(), Box<dyn Error>> {
     let cmd = setup(vec![
         "Hello, world!",
-        "-f",
         "bcrypt",
         "-c",
         "1",

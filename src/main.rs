@@ -1,4 +1,5 @@
 // External imports
+use human_panic::setup_panic;
 use structopt::StructOpt;
 
 // Lib imports
@@ -24,6 +25,7 @@ struct Opt {
 }
 
 fn main() {
+    setup_panic!();
     let opt = Opt::from_args();
     let hash = hash(&opt.string, opt.function, opt.cost, opt.salt);
     println!("{}", hash.as_hex());

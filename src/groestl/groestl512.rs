@@ -2,6 +2,7 @@
 use groestl::{Digest, Groestl512};
 
 // Internal imports
+use crate::error::HshResult;
 use crate::hasher::Hasher;
 use crate::types::HashOutput;
 
@@ -10,10 +11,10 @@ pub struct Groestl512Hasher;
 impl Hasher for Groestl512Hasher {
     type HashInput = ();
 
-    fn hash(&self, _input: (), bytes: &[u8]) -> HashOutput {
+    fn hash(&self, _input: (), bytes: &[u8]) -> HshResult<HashOutput> {
         let mut hasher = Groestl512::new();
         hasher.update(bytes);
-        HashOutput::new(hasher.finalize())
+        Ok(HashOutput::new(hasher.finalize()))
     }
 }
 
@@ -26,7 +27,7 @@ mod test {
     fn test_groestl512_hash_password() {
         let password = "password";
 
-        let hash = Groestl512Hasher.hash_str((), password);
+        let hash = Groestl512Hasher.hash_str((), password).unwrap();
 
         assert_eq!("ced825c4699fc51ff75c3031357994e7abaa94b38a5e037cfd075021a9dba00fc54c586eb0b7cb01fede27f6b61dde292f5a7e8ab42ccbd11bef8b538119750d", hash.as_hex());
     }
@@ -35,7 +36,7 @@ mod test {
     fn test_groestl512_hash_bytes() {
         let bytes = b"password";
 
-        let hash = Groestl512Hasher.hash((), bytes);
+        let hash = Groestl512Hasher.hash((), bytes).unwrap();
 
         assert_eq!("ced825c4699fc51ff75c3031357994e7abaa94b38a5e037cfd075021a9dba00fc54c586eb0b7cb01fede27f6b61dde292f5a7e8ab42ccbd11bef8b538119750d", hash.as_hex());
     }
@@ -51,6 +52,18 @@ mod test {
             bytes in proptest::collection::vec(any::<u8>(), 0..1000)
         ) {
             let _ = Groestl512Hasher.hash((), &bytes);
+        }
+
+        #[test]
+        fn fuzz_groestl512_hash_returns_ok(pass in ".*") {
+            Groestl512Hasher.hash_str((), &pass).unwrap();
+        }
+
+        #[test]
+        fn fuzz_groestl512_hash_bytes_returns_ok(
+            bytes in proptest::collection::vec(any::<u8>(), 0..1000)
+        ) {
+            Groestl512Hasher.hash((), &bytes).unwrap();
         }
     }
 }

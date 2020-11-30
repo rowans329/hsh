@@ -2,6 +2,7 @@
 use sha2::{Digest, Sha256};
 
 // Internal imports
+use crate::error::HshResult;
 use crate::hasher::Hasher;
 use crate::types::HashOutput;
 
@@ -10,10 +11,10 @@ pub struct Sha256Hasher;
 impl Hasher for Sha256Hasher {
     type HashInput = ();
 
-    fn hash(&self, _input: (), bytes: &[u8]) -> HashOutput {
+    fn hash(&self, _input: (), bytes: &[u8]) -> HshResult<HashOutput> {
         let mut hasher = Sha256::new();
         hasher.update(bytes);
-        HashOutput::new(hasher.finalize())
+        Ok(HashOutput::new(hasher.finalize()))
     }
 }
 
@@ -26,7 +27,7 @@ mod test {
     fn test_sha256_hash_password() {
         let password = "password";
 
-        let hash = Sha256Hasher.hash_str((), password);
+        let hash = Sha256Hasher.hash_str((), password).unwrap();
 
         assert_eq!(
             "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",
@@ -38,7 +39,7 @@ mod test {
     fn test_sha256_hash_bytes() {
         let bytes = b"password";
 
-        let hash = Sha256Hasher.hash((), bytes);
+        let hash = Sha256Hasher.hash((), bytes).unwrap();
 
         assert_eq!(
             "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",
@@ -57,6 +58,18 @@ mod test {
             bytes in proptest::collection::vec(any::<u8>(), 0..1000)
         ) {
             let _ = Sha256Hasher.hash((), &bytes);
+        }
+
+        #[test]
+        fn fuzz_sha256_hash_returns_ok(pass in ".*") {
+            Sha256Hasher.hash_str((), &pass).unwrap();
+        }
+
+        #[test]
+        fn fuzz_sha256_hash_bytes_returns_ok(
+            bytes in proptest::collection::vec(any::<u8>(), 0..1000)
+        ) {
+            Sha256Hasher.hash((), &bytes).unwrap();
         }
     }
 }

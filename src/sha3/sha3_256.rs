@@ -2,6 +2,7 @@
 use sha3::{Digest, Sha3_256};
 
 // Internal imports
+use crate::error::HshResult;
 use crate::hasher::Hasher;
 use crate::types::HashOutput;
 
@@ -10,10 +11,10 @@ pub struct Sha3_256Hasher;
 impl Hasher for Sha3_256Hasher {
     type HashInput = ();
 
-    fn hash(&self, _input: (), bytes: &[u8]) -> HashOutput {
+    fn hash(&self, _input: (), bytes: &[u8]) -> HshResult<HashOutput> {
         let mut hasher = Sha3_256::new();
         hasher.update(bytes);
-        HashOutput::new(hasher.finalize())
+        Ok(HashOutput::new(hasher.finalize()))
     }
 }
 
@@ -26,7 +27,7 @@ mod test {
     fn test_sha3_256_hash_password() {
         let password = "password";
 
-        let hash = Sha3_256Hasher.hash_str((), password);
+        let hash = Sha3_256Hasher.hash_str((), password).unwrap();
 
         assert_eq!(
             "c0067d4af4e87f00dbac63b6156828237059172d1bbeac67427345d6a9fda484",
@@ -38,7 +39,7 @@ mod test {
     fn test_sha3_256_hash_bytes() {
         let bytes = b"password";
 
-        let hash = Sha3_256Hasher.hash((), bytes);
+        let hash = Sha3_256Hasher.hash((), bytes).unwrap();
 
         assert_eq!(
             "c0067d4af4e87f00dbac63b6156828237059172d1bbeac67427345d6a9fda484",
@@ -57,6 +58,18 @@ mod test {
             bytes in proptest::collection::vec(any::<u8>(), 0..1000)
         ) {
             let _ = Sha3_256Hasher.hash((), &bytes);
+        }
+
+        #[test]
+        fn fuzz_sha3_256_hash_returns_ok(pass in ".*") {
+            Sha3_256Hasher.hash_str((), &pass).unwrap();
+        }
+
+        #[test]
+        fn fuzz_sha3_256_hash_bytes_returns_ok(
+            bytes in proptest::collection::vec(any::<u8>(), 0..1000)
+        ) {
+            Sha3_256Hasher.hash((), &bytes).unwrap();
         }
     }
 }

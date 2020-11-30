@@ -1,11 +1,14 @@
+// Lib imports
+use std::str::FromStr;
+
 // External imports
 use structopt::StructOpt;
 
 // Lib imports
-use hsh::{
-    hash,
-    types::{HashFunction, Salt},
-};
+use hsh::error::HshResult;
+use hsh::format::FORMAT_MODE;
+use hsh::hash;
+use hsh::types::{Format, HashFunction, Salt};
 
 #[derive(Debug, StructOpt)]
 struct Opt {
@@ -20,11 +23,43 @@ struct Opt {
     cost: Option<u32>,
     /// The 16-byte salt to use when hashing with the Bcrypt hash function
     #[structopt(short, long, required_if("function", "bcrypt"))]
-    salt: Option<Salt>,
+    salt: Option<String>,
+    #[structopt(short, long, env="HSH_FORMAT", possible_values = &Format::variants(), case_insensitive=true, default_value="hex")]
+    format: Format,
+    #[structopt(long, env="SALT_FORMAT", possible_values = &Format::variants(), case_insensitive=true)]
+    salt_format: Option<Format>,
 }
 
 fn main() {
+    let opt = setup();
+    let salt = parse_salt(&opt).unwrap_or_else(|err| {
+        eprintln!("{}", err);
+        std::process::exit(exitcode::DATAERR);
+    });
+    let hash_res = hash(&opt.string, opt.function, opt.cost, salt);
+    if hash_res.is_err() {
+        eprintln!("{}", hash_res.unwrap_err());
+        std::process::exit(exitcode::DATAERR);
+    }
+    println!("{}", hash_res.unwrap());
+    std::process::exit(exitcode::OK);
+}
+
+fn setup() -> Opt {
     let opt = Opt::from_args();
-    let hash = hash(&opt.string, opt.function, opt.cost, opt.salt);
-    println!("{}", hash.as_hex());
+    FORMAT_MODE.init(opt.format, opt.salt_format.unwrap_or(opt.format));
+    opt
+}
+
+fn parse_salt(opt: &Opt) -> HshResult<Option<Salt>> {
+    if opt.salt.is_none() {
+        Ok(None)
+    } else {
+        let res = Salt::from_str(&opt.salt.clone().unwrap());
+        if res.is_ok() {
+            Ok(Some(res.unwrap()))
+        } else {
+            Err(res.unwrap_err())
+        }
+    }
 }

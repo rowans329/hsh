@@ -1,14 +1,18 @@
 // Std imports
-use std::fmt::Debug;
+use std::fmt::{self, Debug, Display};
 use std::str::FromStr;
 
+// External imports
+use b64::{CharacterSet, Config, Newline, ToBase64};
+
 // Internal imports
+use crate::format::get_format;
 use crate::error::{HshErr, HshResult};
 
 // Re-exports
 pub use crate::bcrypt::Salt;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum HashFunction {
     Bcrypt,
     Blake2,
@@ -148,20 +152,62 @@ impl HashOutput {
         }
     }
 
-    pub fn as_bytes(&self) -> &[u8] {
-        &self.bytes
+    pub fn format(&self, format: Format) -> String {
+        match format {
+            Format::Base64 => self.as_base64(),
+            Format::Bytes => format!("{:?}", self.as_bytes()),
+            Format::Hex => self.as_hex()
+        }
     }
 
-    pub fn into_bytes(self) -> Vec<u8> {
-        self.bytes
+    pub fn as_base64(&self) -> String {
+        self.bytes.to_base64(Config {
+            char_set: CharacterSet::Standard,
+            newline: Newline::LF,
+            pad: true,
+            line_length: None,
+        })
+    }
+
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.bytes
     }
 
     pub fn as_hex(&self) -> String {
         hex::encode(&self.bytes)
     }
+}
 
-    pub fn into_hex(self) -> String {
-        hex::encode(self.bytes)
+impl Display for HashOutput {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let format = get_format();
+        f.write_str(&self.format(format))
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Format {
+    Base64,
+    Bytes,
+    Hex,
+}
+
+impl Format {
+    pub fn variants() -> Vec<&'static str> {
+        vec!["base64", "bytes", "hex"]
+    }
+}
+
+impl FromStr for Format {
+    type Err = HshErr;
+
+    fn from_str(str: &str) -> HshResult<Format> {
+        match str {
+            "base64" => Ok(Format::Base64),
+            "bytes" => Ok(Format::Bytes),
+            "hex" => Ok(Format::Hex),
+            _ => panic!(),
+        }
     }
 }
 
@@ -255,24 +301,10 @@ mod test {
     }
 
     #[test]
-    fn test_hash_output_into_bytes() {
-        let bytes = vec![4, 246, 0, 2, 6, 6, 2, 73, 26, 9, 3, 1, 10, 1, 3, 9];
-        let output = HashOutput::new(bytes.clone());
-        assert_eq!(bytes, output.into_bytes());
-    }
-
-    #[test]
     fn test_hash_output_as_hex() {
         let bytes = [4, 246, 0, 2, 6, 6, 2, 73, 26, 9, 3, 1, 10, 1, 3, 9];
         let output = HashOutput::new(bytes.to_vec());
         assert_eq!("04f60002060602491a0903010a010309", &output.as_hex());
-    }
-
-    #[test]
-    fn test_hash_output_into_hex() {
-        let bytes = [4, 246, 0, 2, 6, 6, 2, 73, 26, 9, 3, 1, 10, 1, 3, 9];
-        let output = HashOutput::new(bytes.to_vec());
-        assert_eq!("04f60002060602491a0903010a010309", &output.into_hex());
     }
 
     proptest! {
@@ -297,23 +329,7 @@ mod test {
         }
 
         #[test]
-        fn fuzz_hash_output_into_bytes(
-            bytes in proptest::collection::vec(any::<u8>(), 0..1000)
-        ) {
-            let output = HashOutput::new(bytes.clone());
-            assert_eq!(bytes, output.into_bytes());
-        }
-
-        #[test]
         fn fuzz_hash_output_as_hex(
-            bytes in proptest::collection::vec(any::<u8>(), 0..1000)
-        ) {
-            let output = HashOutput::new(bytes.clone());
-            assert_eq!(hex::encode(bytes), output.as_hex());
-        }
-
-        #[test]
-        fn fuzz_hash_output_into_hex(
             bytes in proptest::collection::vec(any::<u8>(), 0..1000)
         ) {
             let output = HashOutput::new(bytes.clone());

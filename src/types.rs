@@ -6,8 +6,8 @@ use std::str::FromStr;
 use b64::{CharacterSet, Config, Newline, ToBase64};
 
 // Internal imports
-use crate::format::get_format;
 use crate::error::{HshErr, HshResult};
+use crate::format::get_format;
 
 // Re-exports
 pub use crate::bcrypt::Salt;
@@ -156,7 +156,7 @@ impl HashOutput {
         match format {
             Format::Base64 => self.as_base64(),
             Format::Bytes => format!("{:?}", self.as_bytes()),
-            Format::Hex => self.as_hex()
+            Format::Hex => self.as_hex(),
         }
     }
 

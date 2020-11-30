@@ -14,10 +14,16 @@ pub enum HshErr {
 impl Display for HshErr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            HshErr::IncorrectSaltLength(msg) => f.write_str(&format!("incorrect salt length ({})", msg)),
-            HshErr::InvalidHashFunction(func) => f.write_str(&format!("invalid hash function '{}'", func)),
+            HshErr::IncorrectSaltLength(msg) => {
+                f.write_str(&format!("incorrect salt length ({})", msg))
+            }
+            HshErr::InvalidHashFunction(func) => {
+                f.write_str(&format!("invalid hash function '{}'", func))
+            }
             HshErr::SaltFromStrError(msg) => f.write_str(&format!("error parsing salt: {}", msg)),
-            HshErr::UnsuportedStrLength(msg) => f.write_str(&format!("unsuported string length ({})", msg)),
+            HshErr::UnsuportedStrLength(msg) => {
+                f.write_str(&format!("unsuported string length ({})", msg))
+            }
         }
     }
 }

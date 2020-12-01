@@ -1,85 +1,39 @@
 // Modules
-mod bcrypt;
-mod blake2;
-mod gost94;
-mod groestl {
-    pub(crate) mod groestl224;
-    pub(crate) mod groestl256;
-    pub(crate) mod groestl384;
-    pub(crate) mod groestl512;
-}
-mod md2;
-mod md4;
-mod md5;
-mod ripemd {
-    pub(crate) mod ripemd160;
-    pub(crate) mod ripemd320;
-}
-mod sha1;
-mod sha2 {
-    pub(crate) mod sha224;
-    pub(crate) mod sha256;
-    pub(crate) mod sha384;
-    pub(crate) mod sha512;
-}
-mod sha3 {
-    pub(crate) mod keccak224;
-    pub(crate) mod keccak256;
-    pub(crate) mod keccak256full;
-    pub(crate) mod keccak384;
-    pub(crate) mod keccak512;
-    pub(crate) mod sha3_224;
-    pub(crate) mod sha3_256;
-    pub(crate) mod sha3_384;
-    pub(crate) mod sha3_512;
-}
-mod shabal {
-    pub(crate) mod shabal192;
-    pub(crate) mod shabal224;
-    pub(crate) mod shabal256;
-    pub(crate) mod shabal384;
-    pub(crate) mod shabal512;
-}
-mod streebog {
-    pub(crate) mod streebog256;
-    pub(crate) mod streebog512;
-}
-mod whirlpool;
-
-// Public modules
+pub mod bcrypt;
+pub mod blake2;
 pub mod error;
 pub mod format;
+pub mod gost94;
+pub mod groestl;
 pub mod hasher;
+pub mod md2;
+pub mod md4;
+pub mod md5;
+pub mod ripemd;
+pub mod sha1;
+pub mod sha2;
+pub mod sha3;
+pub mod shabal;
+pub mod streebog;
 pub mod types;
+pub mod whirlpool;
 
 // Internal imports
 use crate::bcrypt::{BcryptHasher, BcryptInput};
 use crate::blake2::Blake2Hasher;
 use crate::error::HshResult;
 use crate::gost94::{Gost94Hasher, SBox};
-use crate::groestl::{
-    groestl224::Groestl224Hasher, groestl256::Groestl256Hasher, groestl384::Groestl384Hasher,
-    groestl512::Groestl512Hasher,
-};
+use crate::groestl::*;
 use crate::hasher::Hasher;
 use crate::md2::Md2Hasher;
 use crate::md4::Md4Hasher;
 use crate::md5::Md5Hasher;
-use crate::ripemd::{ripemd160::Ripemd160Hasher, ripemd320::Ripemd320Hasher};
+use crate::ripemd::*;
 use crate::sha1::Sha1Hasher;
-use crate::sha2::{
-    sha224::Sha224Hasher, sha256::Sha256Hasher, sha384::Sha384Hasher, sha512::Sha512Hasher,
-};
-use crate::sha3::{
-    keccak224::Keccak224Hasher, keccak256::Keccak256Hasher, keccak256full::Keccak256FullHasher,
-    keccak384::Keccak384Hasher, keccak512::Keccak512Hasher, sha3_224::Sha3_224Hasher,
-    sha3_256::Sha3_256Hasher, sha3_384::Sha3_384Hasher, sha3_512::Sha3_512Hasher,
-};
-use crate::shabal::{
-    shabal192::Shabal192Hasher, shabal224::Shabal224Hasher, shabal256::Shabal256Hasher,
-    shabal384::Shabal384Hasher, shabal512::Shabal512Hasher,
-};
-use crate::streebog::{streebog256::Streebog256Hasher, streebog512::Streebog512Hasher};
+use crate::sha2::*;
+use crate::sha3::*;
+use crate::shabal::*;
+use crate::streebog::*;
 use crate::types::{HashFunction, HashOutput, Salt};
 use crate::whirlpool::WhirlpoolHasher;
 

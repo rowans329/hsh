@@ -2,6 +2,7 @@
 use shabal::{Digest, Shabal224};
 
 // Internal imports
+use crate::error::HshResult;
 use crate::hasher::Hasher;
 use crate::types::HashOutput;
 
@@ -10,10 +11,10 @@ pub struct Shabal224Hasher;
 impl Hasher for Shabal224Hasher {
     type HashInput = ();
 
-    fn hash(&self, _input: (), bytes: &[u8]) -> HashOutput {
+    fn hash(&self, _input: (), bytes: &[u8]) -> HshResult<HashOutput> {
         let mut hasher = Shabal224::new();
         hasher.update(bytes);
-        HashOutput::new(hasher.finalize())
+        Ok(HashOutput::new(hasher.finalize()))
     }
 }
 
@@ -26,7 +27,7 @@ mod test {
     fn test_shabal224_hash_password() {
         let password = "password";
 
-        let hash = Shabal224Hasher.hash_str((), password);
+        let hash = Shabal224Hasher.hash_str((), password).unwrap();
 
         assert_eq!(
             "d2d9053f6c23d9d34e008f8f6b3fbf023370f05371315b406a45771f",
@@ -38,7 +39,7 @@ mod test {
     fn test_shabal224_hash_bytes() {
         let bytes = b"password";
 
-        let hash = Shabal224Hasher.hash((), bytes);
+        let hash = Shabal224Hasher.hash((), bytes).unwrap();
 
         assert_eq!(
             "d2d9053f6c23d9d34e008f8f6b3fbf023370f05371315b406a45771f",
@@ -57,6 +58,18 @@ mod test {
             bytes in proptest::collection::vec(any::<u8>(), 0..1000)
         ) {
             let _ = Shabal224Hasher.hash((), &bytes);
+        }
+
+        #[test]
+        fn fuzz_shabal224_hash_returns_ok(pass in ".*") {
+            Shabal224Hasher.hash_str((), &pass).unwrap();
+        }
+
+        #[test]
+        fn fuzz_shabal224_hash_bytes_returns_ok(
+            bytes in proptest::collection::vec(any::<u8>(), 0..1000)
+        ) {
+            Shabal224Hasher.hash((), &bytes).unwrap();
         }
     }
 }

@@ -49,6 +49,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 
 [[package]]
+name = "b64"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7afdd34e1f84d4a66e30add7c0d8c784c2b8b2240dbc7feaccee75682a369f26"
+
+[[package]]
 name = "base64"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -204,6 +210,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fea41bba32d969b513997752735605054bc0dfa92b4c56bf1189f2e174be7a10"
 
 [[package]]
+name = "exitcode"
+version = "1.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "de853764b47027c2e862a995c34978ffa63c1501f2e15f987ba11bd4f9bba193"
+
+[[package]]
 name = "float-cmp"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -301,16 +313,20 @@ name = "hsh"
 version = "0.1.0"
 dependencies = [
  "assert_cmd",
+ "b64",
  "bcrypt",
  "blake2",
+ "exitcode",
  "gost94",
  "groestl",
  "hex",
+ "lazy_static",
  "md-5",
  "md2",
  "md4",
  "predicates",
  "proptest",
+ "regex",
  "ripemd160",
  "ripemd320",
  "sha-1",

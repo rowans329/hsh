@@ -99,7 +99,7 @@ fn missing_bcrypt_salt() -> Result<(), Box<dyn Error>> {
 fn bcrypt_invalid_salt_hex_odd_digits() -> Result<(), Box<dyn Error>> {
     let cmd = setup(vec!["Hello, world!", "bcrypt", "-c", "1", "-s", "1a54e"])?;
 
-    assert_errors(cmd, vec!["invalid salt hex -- Odd number of digits"]);
+    assert_errors(cmd, vec!["hex must be of even digits"]);
 
     Ok(())
 }
@@ -117,7 +117,7 @@ fn bcrypt_invalid_salt_incorrect_length_short() -> Result<(), Box<dyn Error>> {
 
     assert_errors(
         cmd,
-        vec!["invalid salt -- incorrect salt length (should be 16 bytes, found 6)"],
+        vec!["incorrect salt length (should be 16 bytes, found 6)"],
     );
 
     Ok(())
@@ -136,7 +136,7 @@ fn bcrypt_invalid_salt_incorrect_length_long() -> Result<(), Box<dyn Error>> {
 
     assert_errors(
         cmd,
-        vec!["invalid salt -- incorrect salt length (should be 16 bytes, found 22)"],
+        vec!["incorrect salt length (should be 16 bytes, found 22)"],
     );
 
     Ok(())

@@ -2,6 +2,7 @@
 use gost94::{Digest, Gost94CryptoPro, Gost94Test};
 
 // Internal imports
+use crate::error::HshResult;
 use crate::hasher::Hasher;
 use crate::types::HashOutput;
 
@@ -16,8 +17,8 @@ pub struct Gost94Hasher;
 impl Hasher for Gost94Hasher {
     type HashInput = SBox;
 
-    fn hash(&self, input: SBox, bytes: &[u8]) -> HashOutput {
-        match input {
+    fn hash(&self, input: SBox, bytes: &[u8]) -> HshResult<HashOutput> {
+        Ok(match input {
             SBox::Test => {
                 let mut hasher = Gost94Test::new();
                 hasher.update(bytes);
@@ -28,7 +29,7 @@ impl Hasher for Gost94Hasher {
                 hasher.update(bytes);
                 HashOutput::new(hasher.finalize())
             }
-        }
+        })
     }
 }
 
@@ -41,7 +42,7 @@ mod test {
     fn test_gost94_hash_password_test_params() {
         let password = "password";
 
-        let hash = Gost94Hasher.hash_str(SBox::Test, password);
+        let hash = Gost94Hasher.hash_str(SBox::Test, password).unwrap();
 
         assert_eq!(
             "db4d9992897eda89b50f1d3208db607902da7e79c6f3bc6e6933cc5919068564",
@@ -53,7 +54,7 @@ mod test {
     fn test_gost94_hash_password_crypto_pro() {
         let password = "password";
 
-        let hash = Gost94Hasher.hash_str(SBox::CryptoPro, password);
+        let hash = Gost94Hasher.hash_str(SBox::CryptoPro, password).unwrap();
 
         assert_eq!(
             "9de785f479c3d3b2ababef7f4738817e10b656f854e64d023ec58931d2464d8f",
@@ -65,7 +66,7 @@ mod test {
     fn test_gost94_hash_bytes_test_params() {
         let bytes = b"password";
 
-        let hash = Gost94Hasher.hash(SBox::Test, bytes);
+        let hash = Gost94Hasher.hash(SBox::Test, bytes).unwrap();
 
         assert_eq!(
             "db4d9992897eda89b50f1d3208db607902da7e79c6f3bc6e6933cc5919068564",
@@ -77,7 +78,7 @@ mod test {
     fn test_gost94_hash_bytes_crypto_pro() {
         let bytes = b"password";
 
-        let hash = Gost94Hasher.hash(SBox::CryptoPro, bytes);
+        let hash = Gost94Hasher.hash(SBox::CryptoPro, bytes).unwrap();
 
         assert_eq!(
             "9de785f479c3d3b2ababef7f4738817e10b656f854e64d023ec58931d2464d8f",
@@ -97,6 +98,19 @@ mod test {
             sbox in random_sbox(),
         ) {
             let _ = Gost94Hasher.hash(sbox, &bytes);
+        }
+
+        #[test]
+        fn fuzz_gost94_hash_returns_ok(pass in ".*", sbox in random_sbox()) {
+            Gost94Hasher.hash_str(sbox, &pass).unwrap();
+        }
+
+        #[test]
+        fn fuzz_gost94_hash_bytes_returns_ok(
+            bytes in proptest::collection::vec(any::<u8>(), 0..1000),
+            sbox in random_sbox(),
+        ) {
+            Gost94Hasher.hash(sbox, &bytes).unwrap();
         }
     }
 

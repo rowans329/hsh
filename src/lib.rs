@@ -1,7 +1,4 @@
 // Modules
-mod error;
-mod hasher;
-
 mod bcrypt;
 mod blake2;
 mod gost94;
@@ -50,11 +47,15 @@ mod streebog {
 mod whirlpool;
 
 // Public modules
+pub mod error;
+pub mod format;
+pub mod hasher;
 pub mod types;
 
 // Internal imports
 use crate::bcrypt::{BcryptHasher, BcryptInput};
 use crate::blake2::Blake2Hasher;
+use crate::error::HshResult;
 use crate::gost94::{Gost94Hasher, SBox};
 use crate::groestl::{
     groestl224::Groestl224Hasher, groestl256::Groestl256Hasher, groestl384::Groestl384Hasher,
@@ -87,7 +88,7 @@ pub fn hash(
     function: HashFunction,
     cost: Option<u32>,
     salt: Option<Salt>,
-) -> HashOutput {
+) -> HshResult<HashOutput> {
     use crate::types::HashFunction::*;
 
     match function {

@@ -2,6 +2,7 @@
 use sha3::{Digest, Sha3_224};
 
 // Internal imports
+use crate::error::HshResult;
 use crate::hasher::Hasher;
 use crate::types::HashOutput;
 
@@ -10,10 +11,10 @@ pub struct Sha3_224Hasher;
 impl Hasher for Sha3_224Hasher {
     type HashInput = ();
 
-    fn hash(&self, _input: (), bytes: &[u8]) -> HashOutput {
+    fn hash(&self, _input: (), bytes: &[u8]) -> HshResult<HashOutput> {
         let mut hasher = Sha3_224::new();
         hasher.update(bytes);
-        HashOutput::new(hasher.finalize())
+        Ok(HashOutput::new(hasher.finalize()))
     }
 }
 
@@ -26,7 +27,7 @@ mod test {
     fn test_sha3_224_hash_password() {
         let password = "password";
 
-        let hash = Sha3_224Hasher.hash_str((), password);
+        let hash = Sha3_224Hasher.hash_str((), password).unwrap();
 
         assert_eq!(
             "c3f847612c3780385a859a1993dfd9fe7c4e6d7f477148e527e9374c",
@@ -38,7 +39,7 @@ mod test {
     fn test_sha3_224_hash_bytes() {
         let bytes = b"password";
 
-        let hash = Sha3_224Hasher.hash((), bytes);
+        let hash = Sha3_224Hasher.hash((), bytes).unwrap();
 
         assert_eq!(
             "c3f847612c3780385a859a1993dfd9fe7c4e6d7f477148e527e9374c",
@@ -57,6 +58,18 @@ mod test {
             bytes in proptest::collection::vec(any::<u8>(), 0..1000)
         ) {
             let _ = Sha3_224Hasher.hash((), &bytes);
+        }
+
+        #[test]
+        fn fuzz_sha3_224_hash_returns_ok(pass in ".*") {
+            Sha3_224Hasher.hash_str((), &pass).unwrap();
+        }
+
+        #[test]
+        fn fuzz_sha3_224_hash_bytes_returns_ok(
+            bytes in proptest::collection::vec(any::<u8>(), 0..1000)
+        ) {
+            Sha3_224Hasher.hash((), &bytes).unwrap();
         }
     }
 }

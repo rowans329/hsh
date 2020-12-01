@@ -39,7 +39,7 @@ impl FormatMode {
         self.0.lock().unwrap_or_else(|err| err.into_inner())
     }
 
-    pub fn test_with_formats<F: FnOnce() -> ()>(
+    pub fn test_with_formats<F: FnOnce()>(
         &self,
         format: Format,
         salt_format: Format,
@@ -49,11 +49,11 @@ impl FormatMode {
         test();
     }
 
-    pub fn test_with_format<F: FnOnce() -> ()>(&self, format: Format, test: F) {
+    pub fn test_with_format<F: FnOnce()>(&self, format: Format, test: F) {
         self.test_with_formats(format, Format::Hex, test);
     }
 
-    pub fn test_with_salt_format<F: FnOnce() -> ()>(&self, salt_format: Format, test: F) {
+    pub fn test_with_salt_format<F: FnOnce()>(&self, salt_format: Format, test: F) {
         self.test_with_formats(Format::Hex, salt_format, test);
     }
 }

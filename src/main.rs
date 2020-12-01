@@ -55,11 +55,6 @@ fn parse_salt(opt: &Opt) -> HshResult<Option<Salt>> {
     if opt.salt.is_none() {
         Ok(None)
     } else {
-        let res = Salt::from_str(&opt.salt.clone().unwrap());
-        if res.is_ok() {
-            Ok(Some(res.unwrap()))
-        } else {
-            Err(res.unwrap_err())
-        }
+        Ok(Some(Salt::from_str(&opt.salt.clone().unwrap())?))
     }
 }

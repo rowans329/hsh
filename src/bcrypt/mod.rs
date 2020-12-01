@@ -40,13 +40,13 @@ impl Salt {
     pub fn from_bytes(str: &str) -> HshResult<Self> {
         let len = str.len();
 
-        if !(str.chars().nth(0) == Some('[') && str.chars().last() == Some(']')) {
+        if !(str.starts_with('[') && str.ends_with(']')) {
             return Err(HshErr::SaltFromStrError(String::from(
                 "invalid format for salt byte input",
             )));
         }
 
-        let strs: Vec<&str> = str[1..len - 1].split(",").collect();
+        let strs: Vec<&str> = str[1..len - 1].split(',').collect();
         let mut bytes = Vec::with_capacity(str.len());
 
         for s in strs {
@@ -117,7 +117,7 @@ impl FromStr for Salt {
     type Err = HshErr;
 
     fn from_str(str: &str) -> HshResult<Salt> {
-        if str.len() == 0 {
+        if str.is_empty() {
             return Err(HshErr::SaltFromStrError(String::from(
                 "salt cannot be blank",
             )));
@@ -149,7 +149,7 @@ impl Hasher for BcryptHasher {
     type HashInput = BcryptInput;
 
     fn hash(&self, input: BcryptInput, bytes: &[u8]) -> HshResult<HashOutput> {
-        if bytes.len() == 0 || bytes.len() > 72 {
+        if bytes.is_empty() || bytes.len() > 72 {
             return Err(HshErr::UnsuportedStrLength(String::from(
                 "input string for bcrypt hash function must be between 0 and 72 bytes",
             )));

@@ -214,6 +214,7 @@ impl FromStr for Format {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::format::FORMAT_MODE;
     use proptest::prelude::*;
 
     #[test]
@@ -294,6 +295,40 @@ mod test {
     }
 
     #[test]
+    fn test_hash_output_format_base64() {
+        let bytes = [4, 246, 0, 2, 6, 6, 2, 73, 26, 9, 3, 1, 10, 1, 3, 9];
+        let output = HashOutput::new(bytes.to_vec());
+        let formatted = output.format(Format::Base64);
+        assert_eq!("BPYAAgYGAkkaCQMBCgEDCQ==", &formatted);
+    }
+
+    #[test]
+    fn test_hash_output_format_bytes() {
+        let bytes = vec![4, 246, 0, 2, 6, 6, 2, 73, 26, 9, 3, 1, 10, 1, 3, 9];
+        let output = HashOutput::new(bytes.clone());
+        let formatted = output.format(Format::Bytes);
+        assert_eq!(
+            "[4, 246, 0, 2, 6, 6, 2, 73, 26, 9, 3, 1, 10, 1, 3, 9]",
+            &formatted
+        );
+    }
+
+    #[test]
+    fn test_hash_output_format_hex() {
+        let bytes = [4, 246, 0, 2, 6, 6, 2, 73, 26, 9, 3, 1, 10, 1, 3, 9];
+        let output = HashOutput::new(bytes.to_vec());
+        let formatted = output.format(Format::Hex);
+        assert_eq!("04f60002060602491a0903010a010309", &formatted);
+    }
+
+    #[test]
+    fn test_hash_output_as_base64() {
+        let bytes = [4, 246, 0, 2, 6, 6, 2, 73, 26, 9, 3, 1, 10, 1, 3, 9];
+        let output = HashOutput::new(bytes.to_vec());
+        assert_eq!("BPYAAgYGAkkaCQMBCgEDCQ==", &output.as_base64());
+    }
+
+    #[test]
     fn test_hash_output_as_bytes() {
         let bytes = vec![4, 246, 0, 2, 6, 6, 2, 73, 26, 9, 3, 1, 10, 1, 3, 9];
         let output = HashOutput::new(bytes.clone());
@@ -307,6 +342,50 @@ mod test {
         assert_eq!("04f60002060602491a0903010a010309", &output.as_hex());
     }
 
+    #[test]
+    fn test_hash_output_display_base64() {
+        FORMAT_MODE.test_with_format(Format::Base64, || {
+            let bytes = [4, 246, 0, 2, 6, 6, 2, 73, 26, 9, 3, 1, 10, 1, 3, 9];
+            let output = HashOutput::new(bytes.to_vec());
+            let formatted = format!("{}", output);
+            assert_eq!("BPYAAgYGAkkaCQMBCgEDCQ==", &formatted);
+        });
+    }
+
+    #[test]
+    fn test_hash_output_display_bytes() {
+        FORMAT_MODE.test_with_format(Format::Bytes, || {
+            let bytes = vec![4, 246, 0, 2, 6, 6, 2, 73, 26, 9, 3, 1, 10, 1, 3, 9];
+            let output = HashOutput::new(bytes.clone());
+            let formatted = format!("{}", output);
+            assert_eq!(
+                "[4, 246, 0, 2, 6, 6, 2, 73, 26, 9, 3, 1, 10, 1, 3, 9]",
+                &formatted
+            );
+        });
+    }
+
+    #[test]
+    fn test_hash_output_display_hex() {
+        FORMAT_MODE.test_with_format(Format::Hex, || {
+            let bytes = [4, 246, 0, 2, 6, 6, 2, 73, 26, 9, 3, 1, 10, 1, 3, 9];
+            let output = HashOutput::new(bytes.to_vec());
+            let formatted = format!("{}", output);
+            assert_eq!("04f60002060602491a0903010a010309", &formatted);
+        });
+    }
+
+    #[test]
+    fn test_format_variants() {
+        assert_eq!(Format::variants(), vec!["base64", "bytes", "hex"]);
+    }
+
+    #[test]
+    fn test_format_from_str_valid() {
+        let format = Format::from_str("base64");
+        assert_eq!(Format::Base64, format.unwrap());
+    }
+
     proptest! {
         #[test]
         fn fuzz_hash_function_from_str_does_not_panic(str in ".*") {
@@ -318,6 +397,22 @@ mod test {
             bytes in proptest::collection::vec(any::<u8>(), 0..1000)
         ) {
             let _ = HashOutput::new(bytes);
+        }
+
+        #[test]
+        fn fuzz_hash_output_as_base64(
+            bytes in proptest::collection::vec(any::<u8>(), 0..1000)
+        ) {
+            let output = HashOutput::new(bytes.clone());
+            assert_eq!(
+                bytes.to_base64(Config {
+                    char_set: CharacterSet::Standard,
+                    newline: Newline::LF,
+                    pad: true,
+                    line_length: None,
+                }),
+                output.as_base64(),
+            );
         }
 
         #[test]

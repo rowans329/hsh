@@ -49,6 +49,10 @@ impl FormatMode {
         test();
     }
 
+    pub fn test_with_format<F: FnOnce() -> ()>(&self, format: Format, test: F) {
+        self.test_with_formats(format, Format::Hex, test);
+    }
+
     pub fn test_with_salt_format<F: FnOnce() -> ()>(&self, salt_format: Format, test: F) {
         self.test_with_formats(Format::Hex, salt_format, test);
     }

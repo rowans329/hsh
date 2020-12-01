@@ -24,8 +24,10 @@ struct Opt {
     /// The 16-byte salt to use when hashing with the Bcrypt hash function
     #[structopt(short, long, required_if("function", "bcrypt"))]
     salt: Option<String>,
-    #[structopt(short, long, env="HSH_FORMAT", possible_values = &Format::variants(), case_insensitive=true, default_value="hex")]
+    /// The format in which to display the output hash
+    #[structopt(long, env="HSH_FORMAT", possible_values = &Format::variants(), case_insensitive=true, default_value="hex")]
     format: Format,
+    /// The format of the salt argument (defaults to the value of `format`)
     #[structopt(long, env="SALT_FORMAT", possible_values = &Format::variants(), case_insensitive=true)]
     salt_format: Option<Format>,
 }

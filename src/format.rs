@@ -39,12 +39,7 @@ impl FormatMode {
         self.0.lock().unwrap_or_else(|err| err.into_inner())
     }
 
-    pub fn test_with_formats<F: FnOnce()>(
-        &self,
-        format: Format,
-        salt_format: Format,
-        test: F,
-    ) {
+    pub fn test_with_formats<F: FnOnce()>(&self, format: Format, salt_format: Format, test: F) {
         self.set(format, salt_format);
         test();
     }

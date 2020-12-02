@@ -135,7 +135,8 @@ impl FromStr for HashFunction {
             "streebog256" => Ok(Streebog256),
             "streebog512" => Ok(Streebog512),
             "whirlpool" => Ok(Whirlpool),
-            str => Err(HshErr::InvalidHashFunction(String::from(str))),
+            // StructOpt ensures that the input string is among those returned by `Self::variants()` before it is parsed, so we should never reach this point
+            _ => panic!("invalid hash function"),
         }
     }
 }
@@ -206,7 +207,8 @@ impl FromStr for Format {
             "base64" => Ok(Format::Base64),
             "bytes" => Ok(Format::Bytes),
             "hex" => Ok(Format::Hex),
-            _ => panic!(),
+            // StructOpt ensures that the input string is among those returned by `Self::variants()` before it is parsed, so we should never reach this point
+            _ => panic!("invalid format"),
         }
     }
 }
@@ -224,15 +226,15 @@ mod test {
     }
 
     #[test]
+    #[should_panic(expected = "invalid hash function")]
     fn test_hash_function_from_empty_str() {
-        let err = HashFunction::from_str("").unwrap_err();
-        assert_eq!(HshErr::InvalidHashFunction(String::from("")), err);
+        let _ = HashFunction::from_str("");
     }
 
     #[test]
+    #[should_panic(expected = "invalid hash function")]
     fn test_hash_function_from_str_invalid() {
-        let err = HashFunction::from_str("foobar").unwrap_err();
-        assert_eq!(HshErr::InvalidHashFunction(String::from("foobar")), err);
+        let _ = HashFunction::from_str("foobar");
     }
 
     #[test]
@@ -386,12 +388,19 @@ mod test {
         assert_eq!(Format::Base64, format.unwrap());
     }
 
-    proptest! {
-        #[test]
-        fn fuzz_hash_function_from_str_does_not_panic(str in ".*") {
-            let _ = HashFunction::from_str(&str);
-        }
+    #[test]
+    #[should_panic(expected = "invalid format")]
+    fn test_format_from_empty_str() {
+        let _ = Format::from_str("");
+    }
 
+    #[test]
+    #[should_panic(expected = "invalid format")]
+    fn test_format_from_str_invalid() {
+        let _ = Format::from_str("foobar");
+    }
+
+    proptest! {
         #[test]
         fn fuzz_hash_output_new_does_not_panic(
             bytes in proptest::collection::vec(any::<u8>(), 0..1000)

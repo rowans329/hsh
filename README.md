@@ -50,6 +50,53 @@ hsh is a simple string-hashing CLI written entirely in Rust that supports a wide
    * Streebog-512
 * [Whirlpool](https://en.wikipedia.org/wiki/Whirlpool_(hash_function))
 
+## Usage
+
+```
+hsh 0.1.0
+A simple string-hashing CLI that supports a wide variety of hash functions
+
+USAGE:
+    hsh [FLAGS] [OPTIONS] <string> <function>
+
+FLAGS:
+    -h, --help       
+            Prints help information
+
+    -V, --version    
+            Prints version information
+
+    -v, --verbose    
+            Pass multiple times for increased log output
+            
+            By default, only errors are reported. Passing `-v` also prints warnings, `-vv` enables info logging, `-vvv`
+            debug, and `-vvvv` trace.
+
+OPTIONS:
+    -c, --cost <cost>                  
+            The cost to use when hashing with the Bcrypt hash function
+
+        --format <format>              
+            The format in which to display the output hash [env: HSH_FORMAT=]  [default: hex]  [possible values: base64,
+            bytes, hex]
+    -s, --salt <salt>                  
+            The 16-byte salt to use when hashing with the Bcrypt hash function
+
+        --salt-format <salt-format>    
+            The format of the salt argument (defaults to the value of `format`) [env: SALT_FORMAT=]  [possible values:
+            base64, bytes, hex]
+
+ARGS:
+    <string>      
+            The string to be hashed
+
+    <function>    
+            The hash function to use [possible values: bcrypt, blake2, gost94test, gost94crypto, groestl224, groestl256,
+            groestl384, groestl512, keccak224, keccak256, keccak256full, keccak384, keccak512, md2, md4, md5, ripemd160,
+            ripemd320, sha1, sha224, sha256, sha384, sha512, sha3-224, sha3-256, sha3-384, sha3-512, shabal192,
+            shabal224, shabal256, shabal384, shabal512, streebog256, streebog512, whirlpool]
+```
+
 ## License
 
 Licensed under either of

@@ -2,6 +2,7 @@
 use std::str::FromStr;
 
 // External imports
+use atty::Stream;
 use chrono::Local;
 use fern::{
     colors::{Color, ColoredLevelConfig},
@@ -68,26 +69,33 @@ fn main() {
 
 fn setup() -> Opt {
     let opt = Opt::from_args();
-    setup_logger(opt.verbosity).unwrap();
+    let coloured = clicolors_control::colors_enabled() && atty::is(Stream::Stdout);
+    setup_logger(opt.verbosity, coloured).unwrap();
     FORMAT_MODE.init(opt.format, opt.salt_format.unwrap_or(opt.format));
     opt
 }
 
-fn setup_logger(log_level: LevelFilter) -> Result<(), fern::InitError> {
-    let colours = ColoredLevelConfig::new()
+fn setup_logger(log_level: LevelFilter, colour: bool) -> Result<(), fern::InitError> {
+    let colours: ColoredLevelConfig = ColoredLevelConfig::new()
         .warn(Color::Yellow)
         .info(Color::Blue)
         .trace(Color::BrightBlack);
+
+    println!("{}", atty::is(Stream::Stdout));
 
     Dispatch::new()
         .chain(
             Dispatch::new()
                 .format(move |out, message, record| {
-                    out.finish(format_args!(
-                        "[{}] {}",
-                        colours.color(record.level()),
-                        message,
-                    ))
+                    if colour {
+                        out.finish(format_args!(
+                            "[{}] {}",
+                            colours.color(record.level()),
+                            message,
+                        ))
+                    } else {
+                        out.finish(format_args!("[{}] {}", record.level(), message,))
+                    }
                 })
                 .level(LevelFilter::Error)
                 .chain(std::io::stderr()),
@@ -96,13 +104,23 @@ fn setup_logger(log_level: LevelFilter) -> Result<(), fern::InitError> {
             Dispatch::new()
                 .filter(|metadata| metadata.level() != LevelFilter::Error)
                 .format(move |out, message, record| {
-                    out.finish(format_args!(
-                        "{}[{}][{}] {}",
-                        Local::now().format("[%Y-%m-%d][%H:%M:%S]"),
-                        record.target(),
-                        colours.color(record.level()),
-                        message,
-                    ))
+                    if colour {
+                        out.finish(format_args!(
+                            "{}[{}][{}] {}",
+                            Local::now().format("[%Y-%m-%d][%H:%M:%S]"),
+                            record.target(),
+                            colours.color(record.level()),
+                            message,
+                        ))
+                    } else {
+                        out.finish(format_args!(
+                            "{}[{}][{}] {}",
+                            Local::now().format("[%Y-%m-%d][%H:%M:%S]"),
+                            record.target(),
+                            record.level(),
+                            message,
+                        ))
+                    }
                 })
                 .level(log_level)
                 .chain(std::io::stdout()),

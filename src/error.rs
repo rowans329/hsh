@@ -3,11 +3,24 @@ use std::cmp::PartialEq;
 use std::error::Error;
 use std::fmt::{self, Debug, Display};
 
+// External imports
+use exitcode::{ExitCode, DATAERR};
+
 #[derive(Debug, PartialEq)]
 pub enum HshErr {
     IncorrectSaltLength(String),
     SaltFromStrError(String),
     UnsuportedStrLength(String),
+}
+
+impl HshErr {
+    pub fn exitcode(&self) -> ExitCode {
+        match self {
+            Self::IncorrectSaltLength(_) => DATAERR,
+            Self::SaltFromStrError(_) => DATAERR,
+            Self::UnsuportedStrLength(_) => DATAERR,
+        }
+    }
 }
 
 impl Display for HshErr {
@@ -27,6 +40,19 @@ impl Display for HshErr {
 impl Error for HshErr {}
 
 pub type HshResult<T> = Result<T, HshErr>;
+
+impl<T> UnwrapOrExit<T> for HshResult<T> {
+    fn unwrap_or_exit(self) -> T {
+        self.unwrap_or_else(|e| {
+            eprintln!("{}", e);
+            std::process::exit(e.exitcode());
+        })
+    }
+}
+
+pub trait UnwrapOrExit<T> {
+    fn unwrap_or_exit(self) -> T;
+}
 
 #[cfg(test)]
 mod test {

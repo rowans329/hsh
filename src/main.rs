@@ -5,7 +5,7 @@ use std::str::FromStr;
 use structopt::StructOpt;
 
 // Lib imports
-use hsh::error::HshResult;
+use hsh::error::{HshResult, UnwrapOrExit};
 use hsh::format::FORMAT_MODE;
 use hsh::hash;
 use hsh::types::{Format, HashFunction, Salt};
@@ -34,16 +34,9 @@ struct Opt {
 
 fn main() {
     let opt = setup();
-    let salt = parse_salt(&opt).unwrap_or_else(|err| {
-        eprintln!("{}", err);
-        std::process::exit(exitcode::DATAERR);
-    });
-    let hash_res = hash(&opt.string, opt.function, opt.cost, salt);
-    if hash_res.is_err() {
-        eprintln!("{}", hash_res.unwrap_err());
-        std::process::exit(exitcode::DATAERR);
-    }
-    println!("{}", hash_res.unwrap());
+    let salt = parse_salt(&opt).unwrap_or_exit();
+    let hash = hash(&opt.string, opt.function, opt.cost, salt).unwrap_or_exit();
+    println!("{}", hash);
     std::process::exit(exitcode::OK);
 }
 

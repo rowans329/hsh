@@ -6,7 +6,6 @@ use std::fmt::{self, Debug, Display};
 #[derive(Debug, PartialEq)]
 pub enum HshErr {
     IncorrectSaltLength(String),
-    InvalidHashFunction(String),
     SaltFromStrError(String),
     UnsuportedStrLength(String),
 }
@@ -16,9 +15,6 @@ impl Display for HshErr {
         match self {
             HshErr::IncorrectSaltLength(msg) => {
                 f.write_str(&format!("incorrect salt length ({})", msg))
-            }
-            HshErr::InvalidHashFunction(func) => {
-                f.write_str(&format!("invalid hash function '{}'", func))
             }
             HshErr::SaltFromStrError(msg) => f.write_str(&format!("error parsing salt: {}", msg)),
             HshErr::UnsuportedStrLength(msg) => {
@@ -41,13 +37,6 @@ mod test {
         let err = HshErr::IncorrectSaltLength("should be 16 bytes, found 22".to_string());
         let msg = format!("{}", err);
         assert_eq!("incorrect salt length (should be 16 bytes, found 22)", &msg);
-    }
-
-    #[test]
-    fn test_hsh_err_display_invalid_hash_function() {
-        let err = HshErr::InvalidHashFunction("foobar".to_string());
-        let msg = format!("{}", err);
-        assert_eq!("invalid hash function 'foobar'", &msg);
     }
 
     #[test]

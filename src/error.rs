@@ -99,4 +99,10 @@ mod test {
         let msg = format!("{}", err);
         assert_eq!("unsuported string length ()", &msg);
     }
+
+    #[test]
+    fn test_hsh_result_unwrap_or_exit_ok() {
+        let res: HshResult<&'static str> = Ok("Hello, world!");
+        assert_eq!("Hello, world!", res.unwrap_or_exit());
+    }
 }

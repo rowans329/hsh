@@ -59,6 +59,27 @@ mod test {
     use super::*;
 
     #[test]
+    fn test_hsh_err_exit_code_incorrect_salt_length() {
+        let err = HshErr::IncorrectSaltLength("should be 16 bytes, found 22".to_string());
+        let code = err.exitcode();
+        assert_eq!(65i32, code);
+    }
+
+    #[test]
+    fn test_hsh_err_exit_code_salt_from_str_error() {
+        let err = HshErr::SaltFromStrError("salt cannot be blank".to_string());
+        let code = err.exitcode();
+        assert_eq!(65i32, code);
+    }
+
+    #[test]
+    fn test_hsh_err_exit_code_unsuported_str_length() {
+        let err = HshErr::UnsuportedStrLength("".to_string());
+        let code = err.exitcode();
+        assert_eq!(65i32, code);
+    }
+
+    #[test]
     fn test_hsh_err_display_incorrect_salt_length() {
         let err = HshErr::IncorrectSaltLength("should be 16 bytes, found 22".to_string());
         let msg = format!("{}", err);

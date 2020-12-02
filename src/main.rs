@@ -57,10 +57,6 @@ struct Opt {
 
 fn main() {
     let opt = setup();
-    log::warn!("warning message");
-    log::info!("info message");
-    log::debug!("debug message");
-    log::trace!("trace message");
     let salt = parse_salt(&opt).unwrap_or_exit();
     let hash = hash(&opt.string, opt.function, opt.cost, salt).unwrap_or_exit();
     println!("{}", hash);
@@ -80,8 +76,6 @@ fn setup_logger(log_level: LevelFilter, colour: bool) -> Result<(), fern::InitEr
         .warn(Color::Yellow)
         .info(Color::Blue)
         .trace(Color::BrightBlack);
-
-    println!("{}", atty::is(Stream::Stdout));
 
     Dispatch::new()
         .chain(

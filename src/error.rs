@@ -5,6 +5,7 @@ use std::fmt::{self, Debug, Display};
 
 // External imports
 use exitcode::{ExitCode, DATAERR};
+use log::error;
 
 #[derive(Debug, PartialEq)]
 pub enum HshErr {
@@ -31,7 +32,7 @@ impl Display for HshErr {
             }
             HshErr::SaltFromStrError(msg) => f.write_str(&format!("error parsing salt: {}", msg)),
             HshErr::UnsuportedStrLength(msg) => {
-                f.write_str(&format!("unsuported string length ({})", msg))
+                f.write_str(&format!("unsuported string length: {}", msg))
             }
         }
     }
@@ -44,7 +45,7 @@ pub type HshResult<T> = Result<T, HshErr>;
 impl<T> UnwrapOrExit<T> for HshResult<T> {
     fn unwrap_or_exit(self) -> T {
         self.unwrap_or_else(|e| {
-            eprintln!("{}", e);
+            error!("{}", e);
             std::process::exit(e.exitcode());
         })
     }

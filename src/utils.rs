@@ -82,3 +82,53 @@ fn color_level(level: Level) -> WithFgColor<Level> {
 fn color_enabled() -> bool {
     clicolors_control::colors_enabled() && atty::is(Stream::Stdout)
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_parse_verbosity() {
+        assert_eq!(LevelFilter::Off, parse_verbosity(0));
+        assert_eq!(LevelFilter::Warn, parse_verbosity(1));
+        assert_eq!(LevelFilter::Info, parse_verbosity(2));
+        assert_eq!(LevelFilter::Debug, parse_verbosity(3));
+        assert_eq!(LevelFilter::Trace, parse_verbosity(4));
+        assert_eq!(LevelFilter::Trace, parse_verbosity(100));
+    }
+
+    #[test]
+    fn test_color_level_error() {
+        let level = format!("{}", color_level(Level::Error));
+
+        assert_eq!("\u{1b}[31mERROR\u{1b}[0m", &level);
+    }
+
+    #[test]
+    fn test_color_level_warn() {
+        let level = format!("{}", color_level(Level::Warn));
+
+        assert_eq!("\u{1b}[33mWARN\u{1b}[0m", &level);
+    }
+
+    #[test]
+    fn test_color_level_info() {
+        let level = format!("{}", color_level(Level::Info));
+
+        assert_eq!("\u{1b}[34mINFO\u{1b}[0m", &level);
+    }
+
+    #[test]
+    fn test_color_level_debug() {
+        let level = format!("{}", color_level(Level::Debug));
+
+        assert_eq!("\u{1b}[37mDEBUG\u{1b}[0m", &level);
+    }
+
+    #[test]
+    fn test_color_level_trace() {
+        let level = format!("{}", color_level(Level::Trace));
+
+        assert_eq!("\u{1b}[90mTRACE\u{1b}[0m", &level);
+    }
+}

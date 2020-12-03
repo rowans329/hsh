@@ -84,3 +84,226 @@ impl Cli {
         self.verbosity
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_cli_get_string() {
+        let cli = Cli {
+            string: String::from("password"),
+            function: HashFunction::Sha1,
+            cost: None,
+            salt: None,
+            format: Format::Hex,
+            salt_format: None,
+            verbosity: LevelFilter::Off,
+        };
+
+        assert_eq!("password", cli.string());
+    }
+
+    #[test]
+    fn test_cli_get_function() {
+        let cli = Cli {
+            string: String::from("password"),
+            function: HashFunction::Sha1,
+            cost: None,
+            salt: None,
+            format: Format::Hex,
+            salt_format: None,
+            verbosity: LevelFilter::Off,
+        };
+
+        assert_eq!(HashFunction::Sha1, cli.function());
+    }
+
+    #[test]
+    fn test_cli_get_cost() {
+        let cli = Cli {
+            string: String::from("password"),
+            function: HashFunction::Sha1,
+            cost: Some(12),
+            salt: None,
+            format: Format::Hex,
+            salt_format: None,
+            verbosity: LevelFilter::Off,
+        };
+
+        assert_eq!(12, cli.cost().unwrap());
+    }
+
+    #[test]
+    fn test_cli_get_salt_base64_valid() {
+        let cli = Cli {
+            string: String::from("password"),
+            function: HashFunction::Sha1,
+            cost: None,
+            salt: Some(String::from("NjQwMTU4NDkyNTc2MDM3NQ==")),
+            format: Format::Hex,
+            salt_format: Some(Format::Base64),
+            verbosity: LevelFilter::Off,
+        };
+
+        FORMAT_MODE.test_with_formats(cli.format(), cli.salt_format(), || {
+            assert_eq!(
+                Salt::new([54, 52, 48, 49, 53, 56, 52, 57, 50, 53, 55, 54, 48, 51, 55, 53]),
+                cli.salt().unwrap().unwrap(),
+            );
+        })
+    }
+
+    #[test]
+    fn test_cli_get_salt_base64_invalid() {
+        let cli = Cli {
+            string: String::from("password"),
+            function: HashFunction::Sha1,
+            cost: None,
+            salt: Some(String::from("invalid base64")),
+            format: Format::Hex,
+            salt_format: Some(Format::Base64),
+            verbosity: LevelFilter::Off,
+        };
+
+        FORMAT_MODE.test_with_formats(cli.format(), cli.salt_format(), || {
+            assert!(cli.salt().is_err());
+        })
+    }
+
+    #[test]
+    fn test_cli_get_salt_bytes_valid() {
+        let cli = Cli {
+            string: String::from("password"),
+            function: HashFunction::Sha1,
+            cost: None,
+            salt: Some(String::from("[1,6,3,20,4,0,61,189,4,2,8,7,0,7,77,16]")),
+            format: Format::Hex,
+            salt_format: Some(Format::Bytes),
+            verbosity: LevelFilter::Off,
+        };
+
+        FORMAT_MODE.test_with_formats(cli.format(), cli.salt_format(), || {
+            assert_eq!(
+                Salt::new([1, 6, 3, 20, 4, 0, 61, 189, 4, 2, 8, 7, 0, 7, 77, 16]),
+                cli.salt().unwrap().unwrap(),
+            );
+        })
+    }
+
+    #[test]
+    fn test_cli_get_salt_bytes_invalid() {
+        let cli = Cli {
+            string: String::from("password"),
+            function: HashFunction::Sha1,
+            cost: None,
+            salt: Some(String::from("invalid bytes")),
+            format: Format::Hex,
+            salt_format: Some(Format::Bytes),
+            verbosity: LevelFilter::Off,
+        };
+
+        FORMAT_MODE.test_with_formats(cli.format(), cli.salt_format(), || {
+            assert!(cli.salt().is_err());
+        })
+    }
+
+    #[test]
+    fn test_cli_get_salt_hex_valid() {
+        let cli = Cli {
+            string: String::from("password"),
+            function: HashFunction::Sha1,
+            cost: None,
+            salt: Some(String::from("dfcd71fb5c9f17bdd0efbe529cc4fcfb")),
+            format: Format::Hex,
+            salt_format: Some(Format::Hex),
+            verbosity: LevelFilter::Off,
+        };
+
+        FORMAT_MODE.test_with_formats(cli.format(), cli.salt_format(), || {
+            assert_eq!(
+                Salt::new([
+                    223, 205, 113, 251, 92, 159, 23, 189, 208, 239, 190, 82, 156, 196, 252, 251
+                ]),
+                cli.salt().unwrap().unwrap(),
+            );
+        })
+    }
+
+    #[test]
+    fn test_cli_get_salt_hex_invalid() {
+        let cli = Cli {
+            string: String::from("password"),
+            function: HashFunction::Sha1,
+            cost: None,
+            salt: Some(String::from("invalid hex")),
+            format: Format::Hex,
+            salt_format: Some(Format::Hex),
+            verbosity: LevelFilter::Off,
+        };
+
+        FORMAT_MODE.test_with_formats(cli.format(), cli.salt_format(), || {
+            assert!(cli.salt().is_err());
+        })
+    }
+
+    #[test]
+    fn test_cli_get_format() {
+        let cli = Cli {
+            string: String::from("password"),
+            function: HashFunction::Sha1,
+            cost: None,
+            salt: None,
+            format: Format::Base64,
+            salt_format: None,
+            verbosity: LevelFilter::Off,
+        };
+
+        assert_eq!(Format::Base64, cli.format());
+    }
+
+    #[test]
+    fn test_cli_get_salt_format() {
+        let cli = Cli {
+            string: String::from("password"),
+            function: HashFunction::Sha1,
+            cost: None,
+            salt: None,
+            format: Format::Hex,
+            salt_format: Some(Format::Bytes),
+            verbosity: LevelFilter::Off,
+        };
+
+        assert_eq!(Format::Bytes, cli.salt_format());
+    }
+
+    #[test]
+    fn test_cli_get_salt_format_default() {
+        let cli = Cli {
+            string: String::from("password"),
+            function: HashFunction::Sha1,
+            cost: None,
+            salt: None,
+            format: Format::Base64,
+            salt_format: None,
+            verbosity: LevelFilter::Off,
+        };
+
+        assert_eq!(Format::Base64, cli.salt_format());
+    }
+
+    #[test]
+    fn test_cli_get_verbosity() {
+        let cli = Cli {
+            string: String::from("password"),
+            function: HashFunction::Sha1,
+            cost: None,
+            salt: None,
+            format: Format::Hex,
+            salt_format: None,
+            verbosity: LevelFilter::Debug,
+        };
+
+        assert_eq!(LevelFilter::Debug, cli.verbosity());
+    }
+}

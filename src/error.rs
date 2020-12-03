@@ -76,11 +76,11 @@ mod test {
     #[test]
     fn test_hsh_err_display_unsuported_str_length() {
         let err = HshErr::UnsuportedStrLength(
-            "input string for bcrypt hash function must be between 0 and 72 bytes".to_string(),
+            "input string for bcrypt hash function must be between 1 and 72 bytes".to_string(),
         );
         let msg = format!("{}", err);
         assert_eq!(
-            "unsuported string length: input string for bcrypt hash function must be between 0 and 72 bytes",
+            "unsuported string length: input string for bcrypt hash function must be between 1 and 72 bytes",
             &msg
         );
     }

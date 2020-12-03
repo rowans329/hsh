@@ -151,7 +151,7 @@ impl Hasher for BcryptHasher {
     fn hash(&self, input: BcryptInput, bytes: &[u8]) -> HshResult<HashOutput> {
         if bytes.is_empty() || bytes.len() > 72 {
             return Err(HshErr::UnsuportedStrLength(String::from(
-                "input string for bcrypt hash function must be between 0 and 72 bytes",
+                "input string for bcrypt hash function must be between 1 and 72 bytes",
             )));
         }
 
@@ -642,7 +642,7 @@ mod test {
 
         assert_eq!(
             HshErr::UnsuportedStrLength(String::from(
-                "input string for bcrypt hash function must be between 0 and 72 bytes"
+                "input string for bcrypt hash function must be between 1 and 72 bytes"
             )),
             err
         );
@@ -674,7 +674,7 @@ mod test {
 
         assert_eq!(
             HshErr::UnsuportedStrLength(String::from(
-                "input string for bcrypt hash function must be between 0 and 72 bytes"
+                "input string for bcrypt hash function must be between 1 and 72 bytes"
             )),
             err
         );
@@ -692,7 +692,7 @@ mod test {
 
         assert_eq!(
             HshErr::UnsuportedStrLength(String::from(
-                "input string for bcrypt hash function must be between 0 and 72 bytes"
+                "input string for bcrypt hash function must be between 1 and 72 bytes"
             )),
             err
         );

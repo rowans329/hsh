@@ -6,7 +6,7 @@ use std::str::FromStr;
 use b64::{CharacterSet, Config, Newline, ToBase64};
 
 // Internal imports
-use crate::error::{HshErr, HshResult};
+use crate::error::{HshError, HshResult};
 use crate::format::get_format;
 
 // Re-exports
@@ -94,7 +94,7 @@ impl HashFunction {
 }
 
 impl FromStr for HashFunction {
-    type Err = HshErr;
+    type Err = HshError;
 
     fn from_str(str: &str) -> HshResult<HashFunction> {
         use super::HashFunction::*;
@@ -200,7 +200,7 @@ impl Format {
 }
 
 impl FromStr for Format {
-    type Err = HshErr;
+    type Err = HshError;
 
     fn from_str(str: &str) -> HshResult<Format> {
         match str {

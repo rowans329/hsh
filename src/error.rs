@@ -9,15 +9,13 @@ use log::error;
 
 #[derive(Debug, PartialEq)]
 pub enum HshErr {
-    IncorrectSaltLength(String),
-    SaltFromStrError(String),
+    SaltFromStrError(SaltFromStrError),
     UnsuportedStrLength(String),
 }
 
 impl HshErr {
     pub fn exitcode(&self) -> ExitCode {
         match self {
-            Self::IncorrectSaltLength(_) => DATAERR,
             Self::SaltFromStrError(_) => DATAERR,
             Self::UnsuportedStrLength(_) => DATAERR,
         }
@@ -27,18 +25,52 @@ impl HshErr {
 impl Display for HshErr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            HshErr::IncorrectSaltLength(msg) => {
-                f.write_str(&format!("incorrect salt length ({})", msg))
+            HshErr::SaltFromStrError(msg) => {
+                f.write_fmt(format_args!("error parsing salt: {}", msg))
             }
-            HshErr::SaltFromStrError(msg) => f.write_str(&format!("error parsing salt: {}", msg)),
             HshErr::UnsuportedStrLength(msg) => {
-                f.write_str(&format!("unsuported string length: {}", msg))
+                f.write_fmt(format_args!("unsuported string length: {}", msg))
             }
         }
     }
 }
 
 impl Error for HshErr {}
+
+impl From<SaltFromStrError> for HshErr {
+    fn from(err: SaltFromStrError) -> Self {
+        Self::SaltFromStrError(err)
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub enum SaltFromStrError {
+    BlankStr,
+    IncorrectLength(usize, usize),
+    InvalidBase64Character(char, usize),
+    InvalidBase64Length,
+    InvalidByte(String, usize),
+    InvalidByteFormat,
+    InvalidHexCharacter(char, usize),
+    InvalidHexLength,
+}
+
+impl Display for SaltFromStrError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Self::BlankStr => f.write_str("salt cannot be blank"),
+            Self::IncorrectLength(exp, act) => f.write_fmt(format_args!("incorrect salt length (expected {} bytes, found {})", exp, act)),
+            Self::InvalidBase64Character(c, i) => f.write_fmt(format_args!("invalid character {} in base64 string at index {}", c, i)),
+            Self::InvalidBase64Length => f.write_str("length of base64 string must be divisible by 4"),
+            Self::InvalidByte(b, i) => f.write_fmt(format_args!("byte input contains invalid byte {} at array index {}", b, i)),
+            Self::InvalidByteFormat => f.write_str("byte input was incorrectly formatted (string should begin and end with '[' and ']' and contain a comma-separated list of values)"),
+            Self::InvalidHexCharacter(c, i) => f.write_fmt(format_args!("invalid character {} in hex at index {}", c, i)),
+            Self::InvalidHexLength => f.write_fmt(format_args!("hex must have even length")),
+        }
+    }
+}
+
+impl Error for SaltFromStrError {}
 
 pub type HshResult<T> = Result<T, HshErr>;
 
@@ -53,35 +85,4 @@ impl<T> UnwrapOrExit<T> for HshResult<T> {
 
 pub trait UnwrapOrExit<T> {
     fn unwrap_or_exit(self) -> T;
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn test_hsh_err_display_incorrect_salt_length() {
-        let err = HshErr::IncorrectSaltLength("should be 16 bytes, found 22".to_string());
-        let msg = format!("{}", err);
-        assert_eq!("incorrect salt length (should be 16 bytes, found 22)", &msg);
-    }
-
-    #[test]
-    fn test_hsh_err_display_salt_from_str_error() {
-        let err = HshErr::SaltFromStrError("salt cannot be blank".to_string());
-        let msg = format!("{}", err);
-        assert_eq!("error parsing salt: salt cannot be blank", &msg);
-    }
-
-    #[test]
-    fn test_hsh_err_display_unsuported_str_length() {
-        let err = HshErr::UnsuportedStrLength(
-            "input string for bcrypt hash function must be between 0 and 72 bytes".to_string(),
-        );
-        let msg = format!("{}", err);
-        assert_eq!(
-            "unsuported string length: input string for bcrypt hash function must be between 0 and 72 bytes",
-            &msg
-        );
-    }
 }

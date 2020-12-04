@@ -7,7 +7,7 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 // Internal imports
-use crate::error::{HshErr, HshResult};
+use crate::error::{HshErr, HshResult, SaltFromStrError};
 use crate::format::get_salt_format;
 use crate::hasher::Hasher;
 use crate::types::{Format, HashOutput};
@@ -20,12 +20,9 @@ impl Salt {
         Self(data)
     }
 
-    pub fn from_vec(data: Vec<u8>) -> HshResult<Self> {
+    pub fn from_vec(data: Vec<u8>) -> Result<Self, SaltFromStrError> {
         if data.len() != 16 {
-            return Err(HshErr::IncorrectSaltLength(format!(
-                "should be 16 bytes, found {}",
-                data.len()
-            )));
+            return Err(SaltFromStrError::IncorrectLength(16, data.len()));
         }
 
         let mut arr = [0u8; 16];
@@ -37,27 +34,21 @@ impl Salt {
         Ok(Self::new(arr))
     }
 
-    pub fn from_bytes(str: &str) -> HshResult<Self> {
-        let len = str.len();
+    pub fn from_bytes(str: &str) -> Result<Self, SaltFromStrError> {
+        let str = str
+            .strip_prefix('[')
+            .and_then(|s| s.strip_suffix(']'))
+            .ok_or(SaltFromStrError::InvalidByteFormat)?;
 
-        if !(str.starts_with('[') && str.ends_with(']')) {
-            return Err(HshErr::SaltFromStrError(String::from(
-                "invalid format for salt byte input",
-            )));
-        }
+        let strs = str.split(',');
+        let mut bytes = Vec::with_capacity(16);
 
-        let strs: Vec<&str> = str[1..len - 1].split(',').collect();
-        let mut bytes = Vec::with_capacity(str.len());
-
-        for s in strs {
+        for (i, s) in strs.enumerate() {
             let s = s.trim();
             let res = u8::from_str(s);
 
             if res.is_err() {
-                return Err(HshErr::SaltFromStrError(format!(
-                    "invalid string '{}' in byte input",
-                    s
-                )));
+                return Err(SaltFromStrError::InvalidByte(s.to_string(), i));
             }
 
             bytes.push(res.unwrap());
@@ -66,46 +57,42 @@ impl Salt {
         Self::from_vec(bytes)
     }
 
-    pub fn from_hex(str: &str) -> HshResult<Self> {
+    pub fn from_hex(str: &str) -> Result<Self, SaltFromStrError> {
         lazy_static! {
             static ref REGEX: Regex = Regex::new(r"([^0-9a-fA-F])").unwrap();
         }
 
         if str.len() % 2 != 0 {
-            return Err(HshErr::SaltFromStrError(String::from(
-                "hex must be of even digits",
-            )));
+            return Err(SaltFromStrError::InvalidHexLength);
         }
 
         let illegal_char = REGEX.find(str);
-        if illegal_char.is_some() {
-            return Err(HshErr::SaltFromStrError(format!(
-                "hex contains illegal character '{}'",
-                illegal_char.unwrap().as_str()
-            )));
+        if let Some(char) = illegal_char {
+            let start = char.start();
+            let char = char.as_str().chars().next().unwrap();
+
+            return Err(SaltFromStrError::InvalidHexCharacter(char, start));
         }
 
         let decoded = hex::decode(str).unwrap();
         Self::from_vec(decoded)
     }
 
-    pub fn from_base64(str: &str) -> HshResult<Self> {
+    pub fn from_base64(str: &str) -> Result<Self, SaltFromStrError> {
         lazy_static! {
             static ref REGEX: Regex = Regex::new(r"([^0-9a-zA-Z/\+=])").unwrap();
         }
 
         if str.len() % 4 != 0 {
-            return Err(HshErr::SaltFromStrError(String::from(
-                "length of base64 string must be a multiple of four",
-            )));
+            return Err(SaltFromStrError::InvalidBase64Length);
         }
 
         let illegal_char = REGEX.find(str);
-        if illegal_char.is_some() {
-            return Err(HshErr::SaltFromStrError(format!(
-                "base64 string contains illegal character '{}'",
-                illegal_char.unwrap().as_str()
-            )));
+        if let Some(char) = illegal_char {
+            let start = char.start();
+            let char = char.as_str().chars().next().unwrap();
+
+            return Err(SaltFromStrError::InvalidBase64Character(char, start));
         }
 
         let decoded = str.from_base64().unwrap();
@@ -118,15 +105,13 @@ impl FromStr for Salt {
 
     fn from_str(str: &str) -> HshResult<Salt> {
         if str.is_empty() {
-            return Err(HshErr::SaltFromStrError(String::from(
-                "salt cannot be blank",
-            )));
+            return Err(HshErr::SaltFromStrError(SaltFromStrError::BlankStr));
         }
 
         match get_salt_format() {
-            Format::Base64 => Salt::from_base64(str),
-            Format::Bytes => Salt::from_bytes(str),
-            Format::Hex => Salt::from_hex(str),
+            Format::Base64 => Ok(Salt::from_base64(str)?),
+            Format::Bytes => Ok(Salt::from_bytes(str)?),
+            Format::Hex => Ok(Salt::from_hex(str)?),
         }
     }
 }
@@ -194,10 +179,7 @@ mod test {
 
         let err = Salt::from_vec(bytes).unwrap_err();
 
-        assert_eq!(
-            HshErr::IncorrectSaltLength(String::from("should be 16 bytes, found 0")),
-            err,
-        )
+        assert_eq!(SaltFromStrError::IncorrectLength(16, 0), err,);
     }
 
     #[test]
@@ -208,10 +190,7 @@ mod test {
 
         let err = Salt::from_vec(bytes).unwrap_err();
 
-        assert_eq!(
-            HshErr::IncorrectSaltLength(String::from("should be 16 bytes, found 22")),
-            err,
-        );
+        assert_eq!(SaltFromStrError::IncorrectLength(16, 22), err,);
     }
 
     #[test]
@@ -229,10 +208,7 @@ mod test {
 
         let err = Salt::from_bytes(&bytes).unwrap_err();
 
-        assert_eq!(
-            HshErr::SaltFromStrError(String::from("invalid format for salt byte input")),
-            err,
-        )
+        assert_eq!(SaltFromStrError::InvalidByteFormat, err,);
     }
 
     #[test]
@@ -242,7 +218,7 @@ mod test {
         let err = Salt::from_bytes(&bytes).unwrap_err();
 
         assert_eq!(
-            HshErr::SaltFromStrError(String::from("invalid string 'nineteen' in byte input")),
+            SaltFromStrError::InvalidByte(String::from("nineteen"), 7),
             err
         );
     }
@@ -254,10 +230,7 @@ mod test {
 
         let err = Salt::from_bytes(&bytes).unwrap_err();
 
-        assert_eq!(
-            HshErr::IncorrectSaltLength(String::from("should be 16 bytes, found 22")),
-            err,
-        );
+        assert_eq!(SaltFromStrError::IncorrectLength(16, 22), err,);
     }
 
     #[test]
@@ -276,10 +249,7 @@ mod test {
 
         let err = Salt::from_hex(&hex).unwrap_err();
 
-        assert_eq!(
-            HshErr::IncorrectSaltLength(String::from("should be 16 bytes, found 0")),
-            err,
-        )
+        assert_eq!(SaltFromStrError::IncorrectLength(16, 0), err,);
     }
 
     #[test]
@@ -288,10 +258,7 @@ mod test {
 
         let err = Salt::from_hex(&hex).unwrap_err();
 
-        assert_eq!(
-            HshErr::SaltFromStrError(String::from("hex must be of even digits")),
-            err
-        );
+        assert_eq!(SaltFromStrError::InvalidHexLength, err);
     }
 
     #[test]
@@ -300,10 +267,7 @@ mod test {
 
         let err = Salt::from_hex(&hex).unwrap_err();
 
-        assert_eq!(
-            HshErr::SaltFromStrError(String::from("hex contains illegal character 'n'")),
-            err
-        );
+        assert_eq!(SaltFromStrError::InvalidHexCharacter('n', 1), err);
     }
 
     #[test]
@@ -315,10 +279,7 @@ mod test {
 
         let err = Salt::from_hex(&hex).unwrap_err();
 
-        assert_eq!(
-            HshErr::IncorrectSaltLength(String::from("should be 16 bytes, found 22")),
-            err,
-        );
+        assert_eq!(SaltFromStrError::IncorrectLength(16, 22), err,);
     }
 
     #[test]
@@ -342,10 +303,7 @@ mod test {
 
         let err = Salt::from_base64(&base64).unwrap_err();
 
-        assert_eq!(
-            HshErr::IncorrectSaltLength(String::from("should be 16 bytes, found 0")),
-            err,
-        )
+        assert_eq!(SaltFromStrError::IncorrectLength(16, 0), err,);
     }
 
     #[test]
@@ -354,12 +312,7 @@ mod test {
 
         let err = Salt::from_base64(&base64).unwrap_err();
 
-        assert_eq!(
-            HshErr::SaltFromStrError(String::from(
-                "length of base64 string must be a multiple of four"
-            )),
-            err
-        );
+        assert_eq!(SaltFromStrError::InvalidBase64Length, err);
     }
 
     #[test]
@@ -368,10 +321,7 @@ mod test {
 
         let err = Salt::from_base64(&base64).unwrap_err();
 
-        assert_eq!(
-            HshErr::SaltFromStrError(String::from("base64 string contains illegal character '$'")),
-            err
-        );
+        assert_eq!(SaltFromStrError::InvalidBase64Character('$', 7), err);
     }
 
     #[test]
@@ -388,10 +338,7 @@ mod test {
 
         let err = Salt::from_base64(&base64).unwrap_err();
 
-        assert_eq!(
-            HshErr::IncorrectSaltLength(String::from("should be 16 bytes, found 22")),
-            err,
-        );
+        assert_eq!(SaltFromStrError::IncorrectLength(16, 22), err,);
     }
 
     #[test]
@@ -412,10 +359,7 @@ mod test {
 
             let err = Salt::from_str(&bytes).unwrap_err();
 
-            assert_eq!(
-                HshErr::SaltFromStrError(String::from("salt cannot be blank")),
-                err,
-            )
+            assert_eq!(HshErr::SaltFromStrError(SaltFromStrError::BlankStr), err);
         });
     }
 
@@ -427,7 +371,10 @@ mod test {
             let err = Salt::from_str(&bytes).unwrap_err();
 
             assert_eq!(
-                HshErr::SaltFromStrError(String::from("invalid string 'nineteen' in byte input")),
+                HshErr::SaltFromStrError(SaltFromStrError::InvalidByte(
+                    String::from("nineteen"),
+                    7
+                )),
                 err
             );
         });
@@ -442,7 +389,7 @@ mod test {
             let err = Salt::from_str(&bytes).unwrap_err();
 
             assert_eq!(
-                HshErr::IncorrectSaltLength(String::from("should be 16 bytes, found 22")),
+                HshErr::SaltFromStrError(SaltFromStrError::IncorrectLength(16, 22)),
                 err,
             );
         })
@@ -467,10 +414,7 @@ mod test {
 
             let err = Salt::from_str(&hex).unwrap_err();
 
-            assert_eq!(
-                HshErr::SaltFromStrError(String::from("salt cannot be blank")),
-                err,
-            )
+            assert_eq!(HshErr::SaltFromStrError(SaltFromStrError::BlankStr), err);
         });
     }
 
@@ -482,7 +426,7 @@ mod test {
             let err = Salt::from_str(&hex).unwrap_err();
 
             assert_eq!(
-                HshErr::SaltFromStrError(String::from("hex must be of even digits")),
+                HshErr::SaltFromStrError(SaltFromStrError::InvalidHexLength),
                 err
             );
         });
@@ -496,7 +440,7 @@ mod test {
             let err = Salt::from_str(&hex).unwrap_err();
 
             assert_eq!(
-                HshErr::SaltFromStrError(String::from("hex contains illegal character 'n'")),
+                HshErr::SaltFromStrError(SaltFromStrError::InvalidHexCharacter('n', 1)),
                 err
             );
         });
@@ -513,7 +457,7 @@ mod test {
             let err = Salt::from_str(&hex).unwrap_err();
 
             assert_eq!(
-                HshErr::IncorrectSaltLength(String::from("should be 16 bytes, found 22")),
+                HshErr::SaltFromStrError(SaltFromStrError::IncorrectLength(16, 22)),
                 err,
             );
         });
@@ -543,10 +487,7 @@ mod test {
 
             let err = Salt::from_str(&base64).unwrap_err();
 
-            assert_eq!(
-                HshErr::SaltFromStrError(String::from("salt cannot be blank")),
-                err,
-            );
+            assert_eq!(HshErr::SaltFromStrError(SaltFromStrError::BlankStr), err);
         });
     }
 
@@ -558,9 +499,7 @@ mod test {
             let err = Salt::from_str(&base64).unwrap_err();
 
             assert_eq!(
-                HshErr::SaltFromStrError(String::from(
-                    "length of base64 string must be a multiple of four"
-                )),
+                HshErr::SaltFromStrError(SaltFromStrError::InvalidBase64Length),
                 err
             );
         });
@@ -575,9 +514,7 @@ mod test {
             let err = Salt::from_str(&base64).unwrap_err();
 
             assert_eq!(
-                HshErr::SaltFromStrError(String::from(
-                    "base64 string contains illegal character ';'"
-                )),
+                HshErr::SaltFromStrError(SaltFromStrError::InvalidBase64Character(';', 8)),
                 err
             );
         });
@@ -599,7 +536,7 @@ mod test {
             let err = Salt::from_str(&base64).unwrap_err();
 
             assert_eq!(
-                HshErr::IncorrectSaltLength(String::from("should be 16 bytes, found 22")),
+                HshErr::SaltFromStrError(SaltFromStrError::IncorrectLength(16, 22)),
                 err,
             );
         });
@@ -709,12 +646,9 @@ mod test {
                 assert_eq!(vec, res.unwrap().0.to_vec());
             } else {
                 assert_eq!(
-                    HshErr::IncorrectSaltLength(format!(
-                        "should be 16 bytes, found {}",
-                        len
-                    )),
+                    SaltFromStrError::IncorrectLength(16, len),
                     res.unwrap_err(),
-                )
+                );
             }
         }
 
@@ -752,14 +686,13 @@ mod test {
         fn fuzz_salt_from_bytes_invalid_digits(input in "([a-zA-Z]+,)+") {
             let err = Salt::from_bytes(&format!("[{}]", input)).unwrap_err();
             let msg = format!("{}", err);
-            assert!(msg.contains("error parsing salt: invalid string"));
-            assert!(msg.contains("in byte input"));
+            assert!(msg.contains("byte input contains invalid byte"));
         }
 
         #[test]
         fn fuzz_salt_from_bytes_invalid_format(input in "[0-9a-zA-Z]*") {
             let err = Salt::from_bytes(&input).unwrap_err();
-            assert_eq!(HshErr::SaltFromStrError(String::from("invalid format for salt byte input")), err);
+            assert_eq!(SaltFromStrError::InvalidByteFormat, err);
         }
 
         #[test]
@@ -772,14 +705,14 @@ mod test {
         #[test]
         fn fuzz_salt_from_hex_odd_length(hex in "[0-9a-f]([0-9a-f][0-9a-f])*") {
             let err = Salt::from_hex(&hex).unwrap_err();
-            assert_eq!(HshErr::SaltFromStrError(String::from("hex must be of even digits")), err);
+            assert_eq!(SaltFromStrError::InvalidHexLength, err);
         }
 
         #[test]
         fn fuzz_salt_from_hex_invalid_characters(hex in "([g-zG-Z][g-zG-Z])+") {
             let err = Salt::from_hex(&hex).unwrap_err();
             let msg = format!("{}", err);
-            assert!(msg.contains("hex contains illegal character"));
+            assert!(msg.contains("invalid character") && msg.contains("in hex at index"));
         }
 
         #[test]
@@ -797,14 +730,14 @@ mod test {
         #[test]
         fn fuzz_salt_from_base64_invalid_length(base64 in "[0-9a-zA-Z/+=]{1,3}([0-9a-zA-Z/+=]{4})*") {
             let err = Salt::from_base64(&base64).unwrap_err();
-            assert_eq!(HshErr::SaltFromStrError(String::from("length of base64 string must be a multiple of four")), err);
+            assert_eq!(SaltFromStrError::InvalidBase64Length, err);
         }
 
         #[test]
         fn fuzz_salt_from_base64_invalid_characters(base64 in "[!\"$%&'*,-.:;<=>?@]{4}") {
             let err = Salt::from_base64(&base64).unwrap_err();
             let msg = format!("{}", err);
-            assert!(msg.contains("base64 string contains illegal character"), msg);
+            assert!(msg.contains("invalid character") && msg.contains("in base64 string at index"));
         }
 
         #[test]

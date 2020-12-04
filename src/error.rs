@@ -25,9 +25,7 @@ impl HshError {
 impl Display for HshError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::SaltFromStrError(msg) => {
-                f.write_fmt(format_args!("error parsing salt: {}", msg))
-            }
+            Self::SaltFromStrError(msg) => f.write_fmt(format_args!("error parsing salt: {}", msg)),
             Self::UnsuportedBcryptLength => {
                 f.write_str("input string for bcrypt hash function must be between 0 and 72 bytes")
             }

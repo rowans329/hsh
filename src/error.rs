@@ -8,12 +8,12 @@ use exitcode::{ExitCode, DATAERR};
 use log::error;
 
 #[derive(Debug, PartialEq)]
-pub enum HshErr {
+pub enum HshError {
     SaltFromStrError(SaltFromStrError),
     UnsuportedStrLength(String),
 }
 
-impl HshErr {
+impl HshError {
     pub fn exitcode(&self) -> ExitCode {
         match self {
             Self::SaltFromStrError(_) => DATAERR,
@@ -22,22 +22,20 @@ impl HshErr {
     }
 }
 
-impl Display for HshErr {
+impl Display for HshError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            HshErr::SaltFromStrError(msg) => {
-                f.write_fmt(format_args!("error parsing salt: {}", msg))
-            }
-            HshErr::UnsuportedStrLength(msg) => {
+            Self::SaltFromStrError(msg) => f.write_fmt(format_args!("error parsing salt: {}", msg)),
+            Self::UnsuportedStrLength(msg) => {
                 f.write_fmt(format_args!("unsuported string length: {}", msg))
             }
         }
     }
 }
 
-impl Error for HshErr {}
+impl Error for HshError {}
 
-impl From<SaltFromStrError> for HshErr {
+impl From<SaltFromStrError> for HshError {
     fn from(err: SaltFromStrError) -> Self {
         Self::SaltFromStrError(err)
     }
@@ -72,7 +70,7 @@ impl Display for SaltFromStrError {
 
 impl Error for SaltFromStrError {}
 
-pub type HshResult<T> = Result<T, HshErr>;
+pub type HshResult<T> = Result<T, HshError>;
 
 impl<T> UnwrapOrExit<T> for HshResult<T> {
     fn unwrap_or_exit(self) -> T {

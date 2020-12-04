@@ -1,6 +1,7 @@
 // Modules
 pub mod bcrypt;
 pub mod blake2;
+pub mod cli;
 pub mod error;
 pub mod format;
 pub mod gost94;
@@ -16,6 +17,7 @@ pub mod sha3;
 pub mod shabal;
 pub mod streebog;
 pub mod types;
+pub mod utils;
 pub mod whirlpool;
 
 // Internal imports

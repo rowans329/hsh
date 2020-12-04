@@ -10,14 +10,14 @@ use log::error;
 #[derive(Debug, PartialEq)]
 pub enum HshError {
     SaltFromStrError(SaltFromStrError),
-    UnsuportedStrLength(String),
+    UnsuportedBcryptLength,
 }
 
 impl HshError {
     pub fn exitcode(&self) -> ExitCode {
         match self {
             Self::SaltFromStrError(_) => DATAERR,
-            Self::UnsuportedStrLength(_) => DATAERR,
+            Self::UnsuportedBcryptLength => DATAERR,
         }
     }
 }
@@ -25,9 +25,11 @@ impl HshError {
 impl Display for HshError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::SaltFromStrError(msg) => f.write_fmt(format_args!("error parsing salt: {}", msg)),
-            Self::UnsuportedStrLength(msg) => {
-                f.write_fmt(format_args!("unsuported string length: {}", msg))
+            Self::SaltFromStrError(msg) => {
+                f.write_fmt(format_args!("error parsing salt: {}", msg))
+            }
+            Self::UnsuportedBcryptLength => {
+                f.write_str("input string for bcrypt hash function must be between 0 and 72 bytes")
             }
         }
     }

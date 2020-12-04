@@ -4,5 +4,4 @@
 #
 # It is recommended to check this file in to source control so that
 # everyone who runs the test benefits from these saved cases.
-cc 5b7a5cb0bc9dab4c7e78ca879e72e7c4ec3f40c248584545310e7fb8b79bfe94 # shrinks to s = ""
-cc 01fe11aaf898432dc357be3b6e358b94bc876ef40de4390352001a8b3ff73202 # shrinks to str = " a A 0A a \u{0}\u{0}\u{b}\u{0} ࠀ"
+cc 8a966007c8dfcd71d89e76dab79283e82d8a69961012a0d26cba5e5cf4bb10a6 # shrinks to base64 = ":!$:"

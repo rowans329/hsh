@@ -8,36 +8,34 @@ use exitcode::{ExitCode, DATAERR};
 use log::error;
 
 #[derive(Debug, PartialEq)]
-pub enum HshErr {
+pub enum HshError {
     SaltFromStrError(SaltFromStrError),
-    UnsuportedStrLength(String),
+    UnsuportedBcryptLength,
 }
 
-impl HshErr {
+impl HshError {
     pub fn exitcode(&self) -> ExitCode {
         match self {
             Self::SaltFromStrError(_) => DATAERR,
-            Self::UnsuportedStrLength(_) => DATAERR,
+            Self::UnsuportedBcryptLength => DATAERR,
         }
     }
 }
 
-impl Display for HshErr {
+impl Display for HshError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            HshErr::SaltFromStrError(msg) => {
-                f.write_fmt(format_args!("error parsing salt: {}", msg))
-            }
-            HshErr::UnsuportedStrLength(msg) => {
-                f.write_fmt(format_args!("unsuported string length: {}", msg))
+            Self::SaltFromStrError(msg) => f.write_fmt(format_args!("error parsing salt: {}", msg)),
+            Self::UnsuportedBcryptLength => {
+                f.write_str("input string for bcrypt hash function must be between 0 and 72 bytes")
             }
         }
     }
 }
 
-impl Error for HshErr {}
+impl Error for HshError {}
 
-impl From<SaltFromStrError> for HshErr {
+impl From<SaltFromStrError> for HshError {
     fn from(err: SaltFromStrError) -> Self {
         Self::SaltFromStrError(err)
     }
@@ -59,12 +57,29 @@ impl Display for SaltFromStrError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::BlankStr => f.write_str("salt cannot be blank"),
-            Self::IncorrectLength(exp, act) => f.write_fmt(format_args!("incorrect salt length (expected {} bytes, found {})", exp, act)),
-            Self::InvalidBase64Character(c, i) => f.write_fmt(format_args!("invalid character '{}' in base64 string at index {}", c, i)),
-            Self::InvalidBase64Length => f.write_str("length of base64 string must be divisible by 4"),
-            Self::InvalidByte(b, i) => f.write_fmt(format_args!("byte input contains invalid byte '{}' at array index {}", b, i)),
-            Self::InvalidByteFormat => f.write_str("byte input was incorrectly formatted (string should begin and end with '[' and ']' and contain a comma-separated list of values)"),
-            Self::InvalidHexCharacter(c, i) => f.write_fmt(format_args!("invalid character '{}' in hex at index {}", c, i)),
+            Self::IncorrectLength(exp, act) => f.write_fmt(format_args!(
+                "incorrect salt length (expected {} bytes, found {})",
+                exp, act
+            )),
+            Self::InvalidBase64Character(c, i) => f.write_fmt(format_args!(
+                "invalid character '{}' in base64 string at index {}",
+                c, i
+            )),
+            Self::InvalidBase64Length => {
+                f.write_str("length of base64 string must be divisible by 4")
+            }
+            Self::InvalidByte(b, i) => f.write_fmt(format_args!(
+                "byte input contains invalid byte '{}' at array index {}",
+                b, i
+            )),
+            Self::InvalidByteFormat => f.write_str(
+                "byte input was incorrectly formatted (string should begin and end with '[' and \
+                    ']' and contain a comma-separated list of values)",
+            ),
+            Self::InvalidHexCharacter(c, i) => f.write_fmt(format_args!(
+                "invalid character '{}' in hex at index {}",
+                c, i
+            )),
             Self::InvalidHexLength => f.write_fmt(format_args!("hex must have even length")),
         }
     }
@@ -72,7 +87,7 @@ impl Display for SaltFromStrError {
 
 impl Error for SaltFromStrError {}
 
-pub type HshResult<T> = Result<T, HshErr>;
+pub type HshResult<T> = Result<T, HshError>;
 
 impl<T> UnwrapOrExit<T> for HshResult<T> {
     fn unwrap_or_exit(self) -> T {
@@ -92,41 +107,40 @@ mod test {
     use super::*;
 
     #[test]
-    fn hsh_err_display_salt_from_str_error() {
-        let err = HshErr::SaltFromStrError(SaltFromStrError::BlankStr);
+    fn hsh_error_display_salt_from_str_error() {
+        let err = HshError::SaltFromStrError(SaltFromStrError::BlankStr);
         let msg = format!("{}", err);
         assert_eq!("error parsing salt: salt cannot be blank", &msg);
     }
 
     #[test]
-    fn hsh_err_display_unsuported_str_length() {
-        let err = HshErr::UnsuportedStrLength(String::from(
-            "input string for bcrypt hash function must be between 0 and 72 bytes",
-        ));
+    fn hsh_error_display_unsuported_bcrypt_length() {
+        let err = HshError::UnsuportedBcryptLength;
         let msg = format!("{}", err);
-        assert_eq!("unsuported string length: input string for bcrypt hash function must be between 0 and 72 bytes", &msg);
-    }
-
-    #[test]
-    fn hsh_err_exit_code_salt_from_str_error() {
-        let err = HshErr::SaltFromStrError(SaltFromStrError::BlankStr);
-        let code = err.exitcode();
-        assert_eq!(65i32, code);
-    }
-
-    #[test]
-    fn hsh_err_exit_code_unsuported_str_length() {
-        let err = HshErr::UnsuportedStrLength(String::from(
+        assert_eq!(
             "input string for bcrypt hash function must be between 0 and 72 bytes",
-        ));
+            &msg
+        );
+    }
+
+    #[test]
+    fn hsh_error_exit_code_salt_from_str_error() {
+        let err = HshError::SaltFromStrError(SaltFromStrError::BlankStr);
         let code = err.exitcode();
         assert_eq!(65i32, code);
     }
 
     #[test]
-    fn hsh_err_from_salt_from_str_error() {
-        let err = HshErr::from(SaltFromStrError::BlankStr);
-        assert_eq!(HshErr::SaltFromStrError(SaltFromStrError::BlankStr), err);
+    fn hsh_error_exit_code_unsuported_str_length() {
+        let err = HshError::UnsuportedBcryptLength;
+        let code = err.exitcode();
+        assert_eq!(65i32, code);
+    }
+
+    #[test]
+    fn hsh_error_from_salt_from_str_error() {
+        let err = HshError::from(SaltFromStrError::BlankStr);
+        assert_eq!(HshError::SaltFromStrError(SaltFromStrError::BlankStr), err);
     }
 
     #[test]

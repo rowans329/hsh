@@ -7,7 +7,7 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 // Internal imports
-use crate::error::{HshErr, HshResult, SaltFromStrError};
+use crate::error::{HshError, HshResult, SaltFromStrError};
 use crate::format::get_salt_format;
 use crate::hasher::Hasher;
 use crate::types::{Format, HashOutput};
@@ -101,11 +101,11 @@ impl Salt {
 }
 
 impl FromStr for Salt {
-    type Err = HshErr;
+    type Err = HshError;
 
     fn from_str(str: &str) -> HshResult<Salt> {
         if str.is_empty() {
-            return Err(HshErr::SaltFromStrError(SaltFromStrError::BlankStr));
+            return Err(HshError::SaltFromStrError(SaltFromStrError::BlankStr));
         }
 
         match get_salt_format() {
@@ -135,9 +135,7 @@ impl Hasher for BcryptHasher {
 
     fn hash(&self, input: BcryptInput, bytes: &[u8]) -> HshResult<HashOutput> {
         if bytes.is_empty() || bytes.len() > 72 {
-            return Err(HshErr::UnsuportedStrLength(String::from(
-                "input string for bcrypt hash function must be between 0 and 72 bytes",
-            )));
+            return Err(HshError::UnsuportedBcryptLength);
         }
 
         let mut hash: [u8; 24] = [0; 24];
@@ -359,7 +357,7 @@ mod test {
 
             let err = Salt::from_str(&bytes).unwrap_err();
 
-            assert_eq!(HshErr::SaltFromStrError(SaltFromStrError::BlankStr), err);
+            assert_eq!(HshError::SaltFromStrError(SaltFromStrError::BlankStr), err);
         });
     }
 
@@ -371,7 +369,7 @@ mod test {
             let err = Salt::from_str(&bytes).unwrap_err();
 
             assert_eq!(
-                HshErr::SaltFromStrError(SaltFromStrError::InvalidByte(
+                HshError::SaltFromStrError(SaltFromStrError::InvalidByte(
                     String::from("nineteen"),
                     7
                 )),
@@ -389,7 +387,7 @@ mod test {
             let err = Salt::from_str(&bytes).unwrap_err();
 
             assert_eq!(
-                HshErr::SaltFromStrError(SaltFromStrError::IncorrectLength(16, 22)),
+                HshError::SaltFromStrError(SaltFromStrError::IncorrectLength(16, 22)),
                 err,
             );
         })
@@ -414,7 +412,7 @@ mod test {
 
             let err = Salt::from_str(&hex).unwrap_err();
 
-            assert_eq!(HshErr::SaltFromStrError(SaltFromStrError::BlankStr), err);
+            assert_eq!(HshError::SaltFromStrError(SaltFromStrError::BlankStr), err);
         });
     }
 
@@ -426,7 +424,7 @@ mod test {
             let err = Salt::from_str(&hex).unwrap_err();
 
             assert_eq!(
-                HshErr::SaltFromStrError(SaltFromStrError::InvalidHexLength),
+                HshError::SaltFromStrError(SaltFromStrError::InvalidHexLength),
                 err
             );
         });
@@ -440,7 +438,7 @@ mod test {
             let err = Salt::from_str(&hex).unwrap_err();
 
             assert_eq!(
-                HshErr::SaltFromStrError(SaltFromStrError::InvalidHexCharacter('n', 1)),
+                HshError::SaltFromStrError(SaltFromStrError::InvalidHexCharacter('n', 1)),
                 err
             );
         });
@@ -457,7 +455,7 @@ mod test {
             let err = Salt::from_str(&hex).unwrap_err();
 
             assert_eq!(
-                HshErr::SaltFromStrError(SaltFromStrError::IncorrectLength(16, 22)),
+                HshError::SaltFromStrError(SaltFromStrError::IncorrectLength(16, 22)),
                 err,
             );
         });
@@ -487,7 +485,7 @@ mod test {
 
             let err = Salt::from_str(&base64).unwrap_err();
 
-            assert_eq!(HshErr::SaltFromStrError(SaltFromStrError::BlankStr), err);
+            assert_eq!(HshError::SaltFromStrError(SaltFromStrError::BlankStr), err);
         });
     }
 
@@ -499,7 +497,7 @@ mod test {
             let err = Salt::from_str(&base64).unwrap_err();
 
             assert_eq!(
-                HshErr::SaltFromStrError(SaltFromStrError::InvalidBase64Length),
+                HshError::SaltFromStrError(SaltFromStrError::InvalidBase64Length),
                 err
             );
         });
@@ -514,8 +512,8 @@ mod test {
             let err = Salt::from_str(&base64).unwrap_err();
 
             assert_eq!(
-                HshErr::SaltFromStrError(SaltFromStrError::InvalidBase64Character(';', 8)),
-                err
+                HshError::SaltFromStrError(SaltFromStrError::InvalidBase64Character(';', 8)),
+                err,
             );
         });
     }
@@ -536,7 +534,7 @@ mod test {
             let err = Salt::from_str(&base64).unwrap_err();
 
             assert_eq!(
-                HshErr::SaltFromStrError(SaltFromStrError::IncorrectLength(16, 22)),
+                HshError::SaltFromStrError(SaltFromStrError::IncorrectLength(16, 22)),
                 err,
             );
         });
@@ -577,12 +575,7 @@ mod test {
 
         let err = BcryptHasher.hash_str(input, "").unwrap_err();
 
-        assert_eq!(
-            HshErr::UnsuportedStrLength(String::from(
-                "input string for bcrypt hash function must be between 0 and 72 bytes"
-            )),
-            err
-        );
+        assert_eq!(HshError::UnsuportedBcryptLength, err);
     }
 
     #[test]
@@ -609,12 +602,7 @@ mod test {
 
         let err = BcryptHasher.hash(input, &[]).unwrap_err();
 
-        assert_eq!(
-            HshErr::UnsuportedStrLength(String::from(
-                "input string for bcrypt hash function must be between 0 and 72 bytes"
-            )),
-            err
-        );
+        assert_eq!(HshError::UnsuportedBcryptLength, err);
     }
 
     #[test]
@@ -627,12 +615,7 @@ mod test {
 
         let err = BcryptHasher.hash(input, &bytes).unwrap_err();
 
-        assert_eq!(
-            HshErr::UnsuportedStrLength(String::from(
-                "input string for bcrypt hash function must be between 0 and 72 bytes"
-            )),
-            err
-        );
+        assert_eq!(HshError::UnsuportedBcryptLength, err);
     }
 
     proptest! {

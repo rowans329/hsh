@@ -60,11 +60,11 @@ impl Display for SaltFromStrError {
         match self {
             Self::BlankStr => f.write_str("salt cannot be blank"),
             Self::IncorrectLength(exp, act) => f.write_fmt(format_args!("incorrect salt length (expected {} bytes, found {})", exp, act)),
-            Self::InvalidBase64Character(c, i) => f.write_fmt(format_args!("invalid character {} in base64 string at index {}", c, i)),
+            Self::InvalidBase64Character(c, i) => f.write_fmt(format_args!("invalid character '{}' in base64 string at index {}", c, i)),
             Self::InvalidBase64Length => f.write_str("length of base64 string must be divisible by 4"),
-            Self::InvalidByte(b, i) => f.write_fmt(format_args!("byte input contains invalid byte {} at array index {}", b, i)),
+            Self::InvalidByte(b, i) => f.write_fmt(format_args!("byte input contains invalid byte '{}' at array index {}", b, i)),
             Self::InvalidByteFormat => f.write_str("byte input was incorrectly formatted (string should begin and end with '[' and ']' and contain a comma-separated list of values)"),
-            Self::InvalidHexCharacter(c, i) => f.write_fmt(format_args!("invalid character {} in hex at index {}", c, i)),
+            Self::InvalidHexCharacter(c, i) => f.write_fmt(format_args!("invalid character '{}' in hex at index {}", c, i)),
             Self::InvalidHexLength => f.write_fmt(format_args!("hex must have even length")),
         }
     }
@@ -111,7 +111,7 @@ mod test {
     fn hsh_err_exit_code_salt_from_str_error() {
         let err = HshErr::SaltFromStrError(SaltFromStrError::BlankStr);
         let code = err.exitcode();
-        assert_eq!(65i64, code);
+        assert_eq!(65i32, code);
     }
 
     #[test]
@@ -120,13 +120,13 @@ mod test {
             "input string for bcrypt hash function must be between 0 and 72 bytes",
         ));
         let code = err.exitcode();
-        assert_eq!(65i64, code);
+        assert_eq!(65i32, code);
     }
 
     #[test]
     fn hsh_err_from_salt_from_str_error() {
         let err = HshErr::from(SaltFromStrError::BlankStr);
-        assert_eq!(HshErr::SaltFromStrError(SaltFromStrError::BlankStr));
+        assert_eq!(HshErr::SaltFromStrError(SaltFromStrError::BlankStr), err);
     }
 
     #[test]
@@ -159,10 +159,10 @@ mod test {
 
     #[test]
     fn salt_from_str_error_display_invalid_byte() {
-        let err = SaltFromStrError::InvalidByte("-1", 2);
+        let err = SaltFromStrError::InvalidByte(String::from("-1"), 2);
         let msg = format!("{}", err);
         assert_eq!(
-            "byte input contains invalid byte \"-1\" at array index 2",
+            "byte input contains invalid byte '-1' at array index 2",
             &msg
         );
     }
@@ -178,14 +178,14 @@ mod test {
     fn salt_from_str_error_display_invalid_hex_character() {
         let err = SaltFromStrError::InvalidHexCharacter('~', 4);
         let msg = format!("{}", err);
-        assert_eq!("invalid character '~' in hex string at index 4", &msg);
+        assert_eq!("invalid character '~' in hex at index 4", &msg);
     }
 
     #[test]
     fn salt_from_str_error_display_invalid_hex_length() {
         let err = SaltFromStrError::InvalidHexLength;
         let msg = format!("{}", err);
-        assert_eq!("hex must be of even length", &msg);
+        assert_eq!("hex must have even length", &msg);
     }
 
     #[test]

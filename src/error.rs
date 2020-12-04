@@ -100,7 +100,9 @@ mod test {
 
     #[test]
     fn hsh_err_display_unsuported_str_length() {
-        let err = HshErr::UnsuportedStrLength(String::from("input string for bcrypt hash function must be between 0 and 72 bytes"));
+        let err = HshErr::UnsuportedStrLength(String::from(
+            "input string for bcrypt hash function must be between 0 and 72 bytes",
+        ));
         let msg = format!("{}", err);
         assert_eq!("unsuported string length: input string for bcrypt hash function must be between 0 and 72 bytes", &msg);
     }
@@ -114,7 +116,9 @@ mod test {
 
     #[test]
     fn hsh_err_exit_code_unsuported_str_length() {
-        let err = HshErr::UnsuportedStrLength(String::from("input string for bcrypt hash function must be between 0 and 72 bytes"));
+        let err = HshErr::UnsuportedStrLength(String::from(
+            "input string for bcrypt hash function must be between 0 and 72 bytes",
+        ));
         let code = err.exitcode();
         assert_eq!(65i64, code);
     }
@@ -157,7 +161,10 @@ mod test {
     fn salt_from_str_error_display_invalid_byte() {
         let err = SaltFromStrError::InvalidByte("-1", 2);
         let msg = format!("{}", err);
-        assert_eq!("byte input contains invalid byte \"-1\" at array index 2", &msg);
+        assert_eq!(
+            "byte input contains invalid byte \"-1\" at array index 2",
+            &msg
+        );
     }
 
     #[test]

@@ -5,6 +5,7 @@ use std::fmt::{self, Debug, Display};
 
 // External imports
 use exitcode::{ExitCode, DATAERR};
+use log::error;
 
 #[derive(Debug, PartialEq)]
 pub enum HshErr {
@@ -31,7 +32,7 @@ impl Display for HshErr {
             }
             HshErr::SaltFromStrError(msg) => f.write_str(&format!("error parsing salt: {}", msg)),
             HshErr::UnsuportedStrLength(msg) => {
-                f.write_str(&format!("unsuported string length ({})", msg))
+                f.write_str(&format!("unsuported string length: {}", msg))
             }
         }
     }
@@ -44,7 +45,7 @@ pub type HshResult<T> = Result<T, HshErr>;
 impl<T> UnwrapOrExit<T> for HshResult<T> {
     fn unwrap_or_exit(self) -> T {
         self.unwrap_or_else(|e| {
-            eprintln!("{}", e);
+            error!("{}", e);
             std::process::exit(e.exitcode());
         })
     }
@@ -95,9 +96,14 @@ mod test {
 
     #[test]
     fn test_hsh_err_display_unsuported_str_length() {
-        let err = HshErr::UnsuportedStrLength("".to_string());
+        let err = HshErr::UnsuportedStrLength(
+            "input string for bcrypt hash function must be between 0 and 72 bytes".to_string(),
+        );
         let msg = format!("{}", err);
-        assert_eq!("unsuported string length ()", &msg);
+        assert_eq!(
+            "unsuported string length: input string for bcrypt hash function must be between 0 and 72 bytes",
+            &msg
+        );
     }
 
     #[test]

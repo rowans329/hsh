@@ -8,8 +8,6 @@ rust:
   - beta
   - nightly
 
-cache: cargo
-
 env:
   global:
     - CRATE_NAME=hsh

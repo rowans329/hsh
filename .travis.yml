@@ -8,15 +8,16 @@ rust:
   - beta
   - nightly
 
-env:
-  global:
-    - CRATE_NAME=hsh
-
 jobs:
   allow_failures:
     - rust: nightly
   fast_finish: true
 
+env:
+  global:
+    - CRATE_NAME=hsh
+
+jobs:
   # Linux
   - env: TARGET=arm-unknown-linux-gnueabi
   - env: TARGET=i686-unknown-linux-gnu

@@ -34,6 +34,7 @@ log = "0.4.11"
 chrono = "0.4.19"
 atty = "0.2.14"
 clicolors-control = "1.0.1"
+human-panic = "1.0.3"
 
 [dev-dependencies]
 assert_cmd = "1.0.1"

@@ -2,6 +2,7 @@
 # https://github.com/japaric/trust/tree/v0.1.2
 
 language: rust
+services: docker
 
 env:
   global:
@@ -16,8 +17,6 @@ jobs:
   - env: TARGET=x86_64-unknown-linux-musl
 
   # OSX
-  - env: TARGET=i686-apple-darwin
-    os: osx
   - env: TARGET=x86_64-apple-darwin
     os: osx
 

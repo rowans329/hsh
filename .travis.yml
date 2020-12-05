@@ -10,8 +10,6 @@ env:
 
 jobs:
   # Linux
-  - env: TARGET=arm-unknown-linux-gnueabi
-    arch: arm64
   - env: TARGET=i686-unknown-linux-gnu
   - env: TARGET=i686-unknown-linux-musl
   - env: TARGET=x86_64-unknown-linux-gnu

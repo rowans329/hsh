@@ -12,8 +12,8 @@ main() {
 
     cross test --target $TARGET
 
-    cross run --target $TARGET
-    cross run --target $TARGET --release
+    cross run --target $TARGET -- password sha256
+    cross run --target $TARGET --release -- password sha256
 }
 
 # we don't run the "test phase" when doing deploys

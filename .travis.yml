@@ -4,13 +4,12 @@
 dist: trusty
 language: rust
 services: docker
-sudo: required
 
 env:
   global:
     - CRATE_NAME=hsh
 
-matrix:
+jobs:
   # Linux
   - env: TARGET=aarch64-unknown-linux-gnu
   - env: TARGET=arm-unknown-linux-gnueabi
@@ -59,7 +58,7 @@ before_deploy:
   - sh ci/before_deploy.sh
 
 deploy:
-  api_key:
+  token:
     secure: mhd85cKswfuwHvyXarY9M4ebObavLeWVTnUgsVRb+6DghacYvjxPNfLRxM/o2UGDnJG8GGC7UhOj2ZoJIu4PoT1Jo6ehl/1coh1spbgyTFUOCiIeJhw+W26z+DzEplC0YkBhpWSp7ZexQlLScPaq+nyJWMc/7wLhapheZBBqOHlgpQBx7HkDVE0iR4PsY5pk6ld/sOlFhUqih3ZNbTPcq4LkxebeIAOp69fnp1ntFyWWIP5sFBf7kbaXWZ/yN9Hpv5qANxpebjFyetE9bVLvQKVdHyHA0Dsik+qtvINAAO8sF0Iq3DOlGxvpiRE3nyXbKSqvZM0H7s5L4M4f9wxofK6gVL6elxl7r1KHlJSHBmF2aiKGiVJVqEDd3786HCkBvfJxej+WjOQvB4y3cdK+iPo8XhMTatKVd+5lxgJ8INAKhs0zsPqSq/FOGbEYhKE2BlnQ2XvL6NRmlORUbdI8weqPQuJAH3vp7q//mFlEhMdXGMjeP0hyXI8cB1SQBAkQhROoFiKtB0X2D68HfzPVV5YE7/q6zkzGbgwOzMg2J55a9JQgHfXMPBUuIuwQ+vo/Xh5q1HOcIiBaEYSINJh3adyV4ha8HTHmF4UeLUx4wviItGzvopeDe8lw104982FngrGVnl0hlRrIvQi0zOFo2ZY4XN4qYwaizN4ta3hjGFo=
   file_glob: true
   file: $CRATE_NAME-$TRAVIS_TAG-$TARGET.*

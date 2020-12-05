@@ -77,7 +77,7 @@ impl Cli {
     }
 
     fn salt_format(&self) -> Format {
-        self.salt_format.unwrap_or(self.format())
+        self.salt_format.unwrap_or_else(|| self.format())
     }
 
     fn verbosity(&self) -> LevelFilter {

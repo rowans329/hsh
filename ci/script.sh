@@ -10,7 +10,7 @@ main() {
         return
     fi
 
-    cross test --target $TARGET
+    cross test --target $TARGET -- --test-threads=1
 
     cross run --target $TARGET -- password sha256
     cross run --target $TARGET --release -- password sha256

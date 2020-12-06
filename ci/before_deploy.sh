@@ -17,9 +17,9 @@ main() {
 
     test -f Cargo.lock || cargo generate-lockfile
 
-    cross rustc --bin hello --target $TARGET --release -- -C lto
+    cross rustc --bin hsh --target $TARGET --release
 
-    cp target/$TARGET/release/hello $stage/
+    cp target/$TARGET/release/hsh $stage/
 
     cd $stage
     tar czf $src/$CRATE_NAME-$TRAVIS_TAG-$TARGET.tar.gz *

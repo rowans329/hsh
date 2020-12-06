@@ -19,9 +19,6 @@ jobs:
   - env: TARGET=x86_64-apple-darwin
     os: osx
 
-  # Windows
-  - env: TARGET=x86_64-pc-windows-gnu
-
   # Nightly
   - env: TARGET=x86_64-unknown-linux-gnu
     rust: nightly

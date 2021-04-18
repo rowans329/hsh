@@ -2,6 +2,7 @@
 use std::str::FromStr;
 
 // External imports
+use human_panic::setup_panic;
 use log::{debug, LevelFilter};
 use structopt::StructOpt;
 
@@ -48,6 +49,7 @@ impl Cli {
     }
 
     pub fn setup(self) -> Self {
+        setup_panic!();
         FORMAT_MODE.init(self.format(), self.salt_format());
         self
     }

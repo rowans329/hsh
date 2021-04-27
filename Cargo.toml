@@ -38,4 +38,4 @@ clicolors-control = "1.0.1"
 [dev-dependencies]
 assert_cmd = "1.0.3"
 predicates = "1.0.7"
-proptest = "0.10.1"
+proptest = "1.0.0"
